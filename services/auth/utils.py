@@ -67,7 +67,7 @@ async def check_access_token(request):
         except AttributeError:
             raise HTTPException(
                 status_code=400,
-                detail="Отсутсвует заголовок с токеном."
+                detail="Отсутствует заголовок с токеном."
             )
         if authorization[0] != "Selezenka":
             raise HTTPException(status_code=400, detail="Не угадал.")
@@ -92,7 +92,7 @@ async def check_refresh_token(request):
         except AttributeError:
             raise HTTPException(
                 status_code=400,
-                detail="Отсутсвует заголовок с токеном."
+                detail="Отсутствует заголовок с токеном."
             )
         if authorization[0] != "Selezenka":
             raise HTTPException(status_code=400, detail="Не угадал.")

@@ -54,7 +54,7 @@ async def create_user(email: EmailStr, name: str, full_name: str, password: str,
         await session.commit()
     except Exception:
         raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
-    return {"detail": "Пользователь был успешно добавлен"}
+    return JSONResponse(status_code=200, content={"detail": "Пользователь был успешно добавлен"})
 
 
 @router.post('/login', summary="Create access and refresh tokens for user")
@@ -76,10 +76,10 @@ async def login(email: EmailStr, password: str,
         )
     result = await session.execute(select(UserModel.id).where(UserModel.email == email))
     user_id = result.scalars().all()[0]
-    return {
+    return JSONResponse(status_code=200, content={
         "access_token": create_access_token(user_id),
         "refresh_token": create_refresh_token(user_id)
-    }
+    })
 
 
 @router.get('/refresh')
