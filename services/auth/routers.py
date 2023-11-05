@@ -150,7 +150,7 @@ async def get_user(request: Request, photo: UploadFile,
     query = select(UserModel.photo).where(UserModel.id == id_)
     result = await session.execute(query)
     result = result.scalars().all()
-    if result[0] != photo.filename:
+    if result[0] != photo.filename and result[0] != "static/user_photo/default.png":
         os.remove(result[0])
     try:
         file_path = f'static/user_photo/{photo.filename}'
@@ -174,13 +174,16 @@ async def get_user(request: Request, photo: UploadFile,
 async def get_user(request: Request,
                    session: AsyncSession = Depends(get_async_session)):
     payload = await check_access_token(request)
-    id_ = int(payload["sub"])
-    query = select(UserModel.photo).where(UserModel.id == id_)
-    result = await session.execute(query)
-    result = result.scalars().all()
-    os.remove(result[0])
-    stmt = update(UserModel).where(UserModel.id == id_).values(photo="static/user_photo/default.png")
-    await session.execute(statement=stmt)
-    await session.commit()
+    try:
+        id_ = int(payload["sub"])
+        query = select(UserModel.photo).where(UserModel.id == id_)
+        result = await session.execute(query)
+        result = result.scalars().all()
+        os.remove(result[0])
+        stmt = update(UserModel).where(UserModel.id == id_).values(photo="static/user_photo/default.png")
+        await session.execute(statement=stmt)
+        await session.commit()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
 
     return Response(status_code=200)

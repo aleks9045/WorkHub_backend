@@ -59,9 +59,9 @@ docker-compose up --build
 
 # API Documentation(JWT Registration)
 
-###
+##
 
-## /auth/register [POST]
+## auth/register [POST]
 
 ### Headers:
 
@@ -87,9 +87,9 @@ photo - string($binary)
 200: {"detail": "Пользователь был успешно добавлен."}
 ```
 
-###
+##
 
-## /auth/login [POST]
+## auth/login [POST]
 
 ### Headers:
 
@@ -112,12 +112,13 @@ photo - string($binary)
  400: {"detail": "Пароль должен содержать минимум 2 буквы разных регистров."}
  400: {"detail": "Пароль должен содержать минимум 1 специальный символ."}
  400: {"detail": "Пароль должен содержать минимум 1 цифру."}
- 200: {"access_token": access_token,  "refresh_token": refresh_token}
+ 200: {"access_token": access_token,
+       "refresh_token": refresh_token}
 ```
 
-###
+##
 
-## /auth/refresh [POST]
+## auth/refresh [POST]
 
 ### Headers:
 
@@ -139,12 +140,13 @@ photo - string($binary)
  401: {"detail": "Срок действия токена истёк."}
  403: {"detail": "Не удалось подтвердить учетные данные."}
  404: {"detail": "Пользователь не найден."}
- 200: {"access_token": access_token,  "refresh_token": refresh_token}
+ 200: {"access_token": access_token,
+       "refresh_token": refresh_token}
 ```
 
-###
+##
 
-## /auth/me [GET]
+## auth/me [GET]
 
 ### Headers:
 
@@ -166,12 +168,15 @@ Authorization: "Bearer" "access_token"
  401: {"detail": "Срок действия токена истёк."}
  403: {"detail": "Не удалось подтвердить учетные данные."}
  404: {"detail": "Пользователь не найден."}
- 200: {"name": name, "full_name": full_name, "email": email, "photo": path_to_photo}
+ 200: {"name": name,
+       "full_name": full_name,
+       "email": email,
+       "photo": path_to_photo}
 ```
 
-###
+##
 
-## /auth/me [PATCH]
+## auth/me [PATCH]
 
 ### Headers:
 
@@ -196,7 +201,9 @@ Authorization: "Bearer" "access_token"
  200: None
 ```
 
-## /auth/me [DELETE]
+##
+
+## auth/me [DELETE]
 
 ### Headers:
 
@@ -220,9 +227,9 @@ Authorization: "Bearer" "access_token"
  200: None
 ```
 
-###
+##
 
-## /auth/logout [GET]
+## auth/logout [GET]
 
 ### Headers:
 
@@ -243,5 +250,59 @@ Authorization: "Bearer" "access_token"
  400: {"detail": "Отсутствует заголовок с токеном."}
  401: {"detail": "Срок действия токена истёк."}
  403: {"detail": "Не удалось подтвердить учетные данные."}
+ 200: None
+```
+
+##
+
+## auth/photo [PATCH]
+
+### Headers:
+
+```
+Content_Type: multipart/form-data
+Authorization: "Bearer" "access_token"
+```
+
+### Fields:
+
+```
+ photo - string($binary)
+```
+
+### Responses:
+
+```
+ 400: {"detail": "Отсутствует заголовок с токеном."}
+ 401: {"detail": "Срок действия токена истёк."}
+ 403: {"detail": "Не удалось подтвердить учетные данные."}
+ 400: {"detail": "Произошла неизвестная ошибка."}
+ 200: None
+```
+
+##
+
+## auth/photo [DELETE]
+
+### Headers:
+
+```
+Content_Type: multipart/form-data
+Authorization: "Bearer" "access_token"
+```
+
+### Fields:
+
+```
+ None
+```
+
+### Responses:
+
+```
+ 400: {"detail": "Отсутствует заголовок с токеном."}
+ 401: {"detail": "Срок действия токена истёк."}
+ 403: {"detail": "Не удалось подтвердить учетные данные."}
+ 400: {"detail": "Произошла неизвестная ошибка."}
  200: None
 ```
