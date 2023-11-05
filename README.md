@@ -65,21 +65,27 @@ docker-compose up --build
 
 ### Headers:
 
-- #### Content_Type: multipart/form-data
+```
+Content_Type: multipart/form-data
+```
 
 ### Fields:
 
-- #### email - string(required)
-- #### name - string(required)
-- #### full_name - string(required)
-- #### password - string(required)
-- #### photo - string($binary)
+```
+email - string(required)
+name - string(required)
+full_name - string(required)
+password - string(required)
+photo - string($binary)
+```
 
 ### Responses:
 
-- #### 400: {"detail":<br>"Пользователь с такой почтой уже существует."}
-- #### 400: {"detail":<br>"Произошла неизвестная ошибка."
-- #### 200: {"detail":<br>"Пользователь был успешно добавлен"}
+```
+400: {"detail": "Пользователь с такой почтой уже существует."}
+400: {"detail": "Произошла неизвестная ошибка."
+200: {"detail": "Пользователь был успешно добавлен."}
+```
 
 ###
 
@@ -87,21 +93,27 @@ docker-compose up --build
 
 ### Headers:
 
-- #### Content_Type: multipart/form-data
+```
+ Content_Type: multipart/form-data
+```
 
 ### Fields:
 
-- #### email - string(required)
-- #### password - string(required)
+```
+ email - string(required)
+ password - string(required)
+```
 
 ### Responses:
 
-- #### 400: {"detail":<br>"Неверно введена почта или пароль."}
-- #### 400: {"detail":<br>"Пароль должен содержать минимум 8 символов."}
-- #### 400: {"detail":<br>"Пароль должен содержать минимум 2 буквы разных регистров."}
-- #### 400: {"detail":<br>"Пароль должен содержать минимум 1 специальный символ."}
-- #### 400: {"detail":<br>"Пароль должен содержать минимум 1 цифру."}
-- #### 200: {"access_token": access_token, <br>"refresh_token": refresh_token}
+```
+ 400: {"detail": "Неверно введена почта или пароль."}
+ 400: {"detail": "Пароль должен содержать минимум 8 символов."}
+ 400: {"detail": "Пароль должен содержать минимум 2 буквы разных регистров."}
+ 400: {"detail": "Пароль должен содержать минимум 1 специальный символ."}
+ 400: {"detail": "Пароль должен содержать минимум 1 цифру."}
+ 200: {"access_token": access_token,  "refresh_token": refresh_token}
+```
 
 ###
 
@@ -109,98 +121,127 @@ docker-compose up --build
 
 ### Headers:
 
-- #### Content_Type: multipart/form-data
-- #### Authorization: "Bearer" "refresh_token"
+```
+ Content_Type: multipart/form-data
+ Authorization: "Bearer" "refresh_token"
+```
 
 ### Fields:
 
-- #### None
+```
+ None
+```
 
 ### Responses:
 
-- #### 400: {"detail":<br>"Отсутствует заголовок с токеном."}
-- #### 401: {"detail":<br>"Срок действия токена истёк."}
-- #### 403: {"detail":<br>"Не удалось подтвердить учетные данные."}
-- #### 404: {"detail":<br>"Пользователь не найден."}
-- #### 200: {"access_token": access_token, <br>"refresh_token": refresh_token}
+```
+ 400: {"detail": "Отсутствует заголовок с токеном."}
+ 401: {"detail": "Срок действия токена истёк."}
+ 403: {"detail": "Не удалось подтвердить учетные данные."}
+ 404: {"detail": "Пользователь не найден."}
+ 200: {"access_token": access_token,  "refresh_token": refresh_token}
+```
 
 ###
+
 ## /auth/me [GET]
-
-### Content_Type: None
-
-### Fields:
-
-- #### None
 
 ### Headers:
 
-- #### Content_Type: None
-- #### Authorization: "Bearer" "access_token"
+```
+Content_Type: None
+Authorization: "Bearer" "access_token"
+```
+
+### Fields:
+
+```
+ None
+```
 
 ### Responses:
 
-- #### 400: {"detail":<br>"Отсутствует заголовок с токеном."}
-- #### 401: {"detail":<br>"Срок действия токена истёк."}
-- #### 403: {"detail":<br>"Не удалось подтвердить учетные данные."}
-- #### 404: {"detail":<br>"Пользователь не найден."}
-- #### 200: {"name": name, <br>"full_name": full_name, <br>"email": email, <br>"photo": path_to_photo}
+```
+ 400: {"detail": "Отсутствует заголовок с токеном."}
+ 401: {"detail": "Срок действия токена истёк."}
+ 403: {"detail": "Не удалось подтвердить учетные данные."}
+ 404: {"detail": "Пользователь не найден."}
+ 200: {"name": name, "full_name": full_name, "email": email, "photo": path_to_photo}
+```
 
 ###
 
 ## /auth/me [PATCH]
 
-### Fields:
-
-- #### name - string(required)
-- #### full_name - string(required)
-
 ### Headers:
 
-- #### Content_Type: application/json
-- #### Authorization: "Bearer" "access_token"
+```
+Content_Type: application/json
+Authorization: "Bearer" "access_token"
+```
+
+### Fields:
+
+```
+ name - string(required)
+ full_name - string(required)
+```
 
 ### Responses:
 
-- #### 400: {"detail":<br>"Отсутствует заголовок с токеном."}
-- #### 401: {"detail":<br>"Срок действия токена истёк."}
-- #### 403: {"detail":<br>"Не удалось подтвердить учетные данные."}
-- #### 200: None
+```
+ 400: {"detail": "Отсутствует заголовок с токеном."}
+ 401: {"detail": "Срок действия токена истёк."}
+ 403: {"detail": "Не удалось подтвердить учетные данные."}
+ 200: None
+```
 
 ## /auth/me [DELETE]
 
-### Fields:
-
-- #### None
-
 ### Headers:
 
-- #### Content_Type: None
-- #### Authorization: "Bearer" "access_token"
+```
+Content_Type: None
+Authorization: "Bearer" "access_token"
+```
+
+### Fields:
+
+```
+ None
+```
 
 ### Responses:
 
-- #### 400: {"detail":<br>"Отсутствует заголовок с токеном."}
-- #### 401: {"detail":<br>"Срок действия токена истёк."}
-- #### 403: {"detail":<br>"Не удалось подтвердить учетные данные."}
-- #### 200: None
+```
+ 400: {"detail": "Отсутствует заголовок с токеном."}
+ 401: {"detail": "Срок действия токена истёк."}
+ 403: {"detail": "Не удалось подтвердить учетные данные."}
+ 200: None
+```
 
 ###
 
 ## /auth/logout [GET]
 
-### Fields:
-
-- #### None
-
 ### Headers:
 
-- #### Content_Type: None
-- #### Authorization: "Bearer" "access_token"
+```
+Content_Type: None
+Authorization: "Bearer" "access_token"
+```
+
+### Fields:
+
+```
+ None
+```
 
 ### Responses:
 
-- #### 400: {"detail":<br>"Отсутствует заголовок с токеном."}
-- #### 401: {"detail":<br>"Срок действия токена истёк."}
-- #### 403: {"detail":<br>"Не удалось подтвердить учетные данные."}
-- #### 200: None
+```
+ 400: {"detail": "Отсутствует заголовок с токеном."}
+ 401: {"detail": "Срок действия токена истёк."}
+ 403: {"detail": "Не удалось подтвердить учетные данные."}
+ 200: None
+```

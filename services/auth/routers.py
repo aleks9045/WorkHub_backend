@@ -1,7 +1,9 @@
+import os
 import sys
+from typing import Optional
 
 import aiofiles
-from fastapi import UploadFile, Depends, HTTPException, Request, Response
+from fastapi import UploadFile, Depends, HTTPException, Request, Response, Header
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRouter
 from sqlalchemy import insert, select, delete, update
@@ -42,7 +44,7 @@ async def create_user(email: EmailStr, name: str, full_name: str, password: str,
             await session.execute(statement=stmt)
             await session.commit()
         elif photo is None:
-            file_path = ""
+            file_path = "static/user_photo/default.png"
         else:
             file_path = ""
         stmt = insert(UserModel).values(email=email,
@@ -140,20 +142,45 @@ async def get_user(request: Request,
     return Response(status_code=200)
 
 
-@router.post('/my_photo')
+@router.patch('/photo')
 async def get_user(request: Request, photo: UploadFile,
                    session: AsyncSession = Depends(get_async_session)):
-    # payload = await check_access_token(request)
-
+    payload = await check_access_token(request)
+    id_ = int(payload["sub"])
+    query = select(UserModel.photo).where(UserModel.id == id_)
+    result = await session.execute(query)
+    result = result.scalars().all()
+    if result[0] != photo.filename:
+        os.remove(result[0])
     try:
         file_path = f'static/user_photo/{photo.filename}'
         async with aiofiles.open(file_path, 'wb') as out_file:
             content = photo.file.read()
             await out_file.write(content)
-        stmt = insert(FileModel).values(file_name=photo.filename, file_path=file_path)
+        stmt = update(FileModel).where(FileModel.file_path == result[0]).values(file_name=photo.filename,
+                                                                                file_path=file_path)
+        await session.execute(statement=stmt)
+        await session.commit()
+        stmt = update(UserModel).where(UserModel.id == id_).values(photo=file_path)
         await session.execute(statement=stmt)
         await session.commit()
     except Exception:
         raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
+
+    return Response(status_code=200)
+
+
+@router.delete('/photo')
+async def get_user(request: Request,
+                   session: AsyncSession = Depends(get_async_session)):
+    payload = await check_access_token(request)
+    id_ = int(payload["sub"])
+    query = select(UserModel.photo).where(UserModel.id == id_)
+    result = await session.execute(query)
+    result = result.scalars().all()
+    os.remove(result[0])
+    stmt = update(UserModel).where(UserModel.id == id_).values(photo="static/user_photo/default.png")
+    await session.execute(statement=stmt)
+    await session.commit()
 
     return Response(status_code=200)
