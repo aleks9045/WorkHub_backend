@@ -7,7 +7,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 import sys
-sys.path.append("../../../GoodProject")
+sys.path.append("../../GoodProject")
 
 
 from backend.config import POSTGRES_USER, PORT, POSTGRES_PASSWORD, HOST, POSTGRES_DB

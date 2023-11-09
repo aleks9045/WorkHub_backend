@@ -59,7 +59,7 @@ async def create_user(email: EmailStr, name: str, full_name: str, password: str,
     return JSONResponse(status_code=200, content={"detail": "Пользователь был успешно добавлен"})
 
 
-@router.post('/login', summary="Create access and refresh tokens for user")
+@router.post('/login', summary="Create access and refresh tokens")
 async def login(email: EmailStr, password: str,
                 session: AsyncSession = Depends(get_async_session)):
     query = select(UserModel.hashed_password).where(UserModel.email == email)
@@ -78,14 +78,14 @@ async def login(email: EmailStr, password: str,
         )
     result = await session.execute(select(UserModel.id).where(UserModel.email == email))
     user_id = result.scalars().all()[0]
-    return JSONResponse(status_code=200, content={
+    return JSONResponse(status_code=201, content={
         "access_token": create_access_token(user_id),
         "refresh_token": create_refresh_token(user_id)
     })
 
 
-@router.get('/refresh')
-async def get_user(request: Request,
+@router.get('/refresh', summary="Update access and refresh tokens")
+async def get_new_tokens(request: Request,
                    session: AsyncSession = Depends(get_async_session)):
     payload = await check_refresh_token(request)
     query = select(UserModel.id).where(UserModel.id == int(payload["sub"]))
@@ -99,7 +99,7 @@ async def get_user(request: Request,
     })
 
 
-@router.get('/me')
+@router.get('/me', summary="Get information about user")
 async def get_user(request: Request, session: AsyncSession = Depends(get_async_session)):
     payload = await check_access_token(request)
     query = select(UserModel.name, UserModel.full_name, UserModel.email, UserModel.photo).where(
@@ -114,24 +114,31 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
                                                   "photo": result[0][3]})
 
 
-@router.get('/logout')
-async def get_user(request: Request):
+@router.get('/logout', summary="Logout")
+async def logout(request: Request):
     await check_access_token(request)
     return Response(status_code=200)
 
 
-@router.delete('/me')
-async def get_user(request: Request,
+@router.delete('/me', summary="Delete user")
+async def delete_user(request: Request,
                    session: AsyncSession = Depends(get_async_session)):
     payload = await check_access_token(request)
+
+    query = select(UserModel.photo).where(UserModel.id == int(payload["sub"]))
+    result = await session.execute(query)
+    result = result.scalars().all()
+    os.remove(result[0])
+
     stmt = delete(UserModel).where(UserModel.id == int(payload["sub"]))
     await session.execute(stmt)
     await session.commit()
+
     return Response(status_code=200)
 
 
-@router.patch('/me')
-async def get_user(request: Request,
+@router.patch('/me', summary="Change user's information")
+async def patch_user(request: Request,
                    session: AsyncSession = Depends(get_async_session)):
     payload = await check_access_token(request)
     data = await request.json()
@@ -142,8 +149,8 @@ async def get_user(request: Request,
     return Response(status_code=200)
 
 
-@router.patch('/photo')
-async def get_user(request: Request, photo: UploadFile,
+@router.patch('/photo', summary="Update user's photo")
+async def patch_photo(request: Request, photo: UploadFile,
                    session: AsyncSession = Depends(get_async_session)):
     payload = await check_access_token(request)
     id_ = int(payload["sub"])
@@ -170,8 +177,8 @@ async def get_user(request: Request, photo: UploadFile,
     return Response(status_code=200)
 
 
-@router.delete('/photo')
-async def get_user(request: Request,
+@router.delete('/photo', summary="Delete user's photo")
+async def delete_photo(request: Request,
                    session: AsyncSession = Depends(get_async_session)):
     payload = await check_access_token(request)
     try:

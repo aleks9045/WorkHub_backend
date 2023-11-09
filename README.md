@@ -84,7 +84,7 @@ photo - string($binary)
 ```
 400: {"detail": "Пользователь с такой почтой уже существует."}
 400: {"detail": "Произошла неизвестная ошибка."
-200: {"detail": "Пользователь был успешно добавлен."}
+201: {"detail": "Пользователь был успешно добавлен."}
 ```
 
 ##
@@ -287,7 +287,7 @@ Authorization: "Bearer" "access_token"
 ### Headers:
 
 ```
-Content_Type: multipart/form-data
+Content_Type: None
 Authorization: "Bearer" "access_token"
 ```
 
