@@ -1,20 +1,18 @@
 import os
 import sys
-from typing import Optional
 
 import aiofiles
-from fastapi import UploadFile, Depends, HTTPException, Request, Response, Header
+from fastapi import UploadFile, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRouter
 from sqlalchemy import insert, select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
 
 sys.path.append("../../../GoodProject")
 
 from backend.database import get_async_session
 from backend.services.auth.utils import get_hashed_password, check_password, verify_password, \
-    create_access_token, create_refresh_token, check_access_token, check_refresh_token
+    create_access_token, create_refresh_token, check_token
 from backend.services.auth.models import UserModel
 from backend.services.files.models import FileModel
 from pydantic import EmailStr
@@ -67,13 +65,13 @@ async def login(email: EmailStr, password: str,
     result = result.scalars().all()
     if not result:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=400,
             detail="Неверно введена почта или пароль."
         )
     hashed_pass = result[0]
     if not verify_password(password, hashed_pass):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=400,
             detail="Неверно введена почта или пароль."
         )
     result = await session.execute(select(UserModel.id).where(UserModel.email == email))
@@ -86,8 +84,8 @@ async def login(email: EmailStr, password: str,
 
 @router.get('/refresh', summary="Update access and refresh tokens")
 async def get_new_tokens(request: Request,
-                   session: AsyncSession = Depends(get_async_session)):
-    payload = await check_refresh_token(request)
+                         session: AsyncSession = Depends(get_async_session)):
+    payload = await check_token(request, False)
     query = select(UserModel.id).where(UserModel.id == int(payload["sub"]))
     result = await session.execute(query)
     result = result.all()
@@ -101,7 +99,7 @@ async def get_new_tokens(request: Request,
 
 @router.get('/me', summary="Get information about user")
 async def get_user(request: Request, session: AsyncSession = Depends(get_async_session)):
-    payload = await check_access_token(request)
+    payload = await check_token(request, True)
     query = select(UserModel.name, UserModel.full_name, UserModel.email, UserModel.photo).where(
         UserModel.id == int(payload["sub"]))
     result = await session.execute(query)
@@ -116,14 +114,14 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
 
 @router.get('/logout', summary="Logout")
 async def logout(request: Request):
-    await check_access_token(request)
+    await check_token(request, True)
     return Response(status_code=200)
 
 
 @router.delete('/me', summary="Delete user")
 async def delete_user(request: Request,
-                   session: AsyncSession = Depends(get_async_session)):
-    payload = await check_access_token(request)
+                      session: AsyncSession = Depends(get_async_session)):
+    payload = await check_token(request, True)
 
     query = select(UserModel.photo).where(UserModel.id == int(payload["sub"]))
     result = await session.execute(query)
@@ -139,8 +137,8 @@ async def delete_user(request: Request,
 
 @router.patch('/me', summary="Change user's information")
 async def patch_user(request: Request,
-                   session: AsyncSession = Depends(get_async_session)):
-    payload = await check_access_token(request)
+                     session: AsyncSession = Depends(get_async_session)):
+    payload = await check_token(request, True)
     data = await request.json()
     stmt = update(UserModel).where(UserModel.id == int(payload["sub"])).values(name=data["name"],
                                                                                full_name=data["full_name"])
@@ -151,8 +149,8 @@ async def patch_user(request: Request,
 
 @router.patch('/photo', summary="Update user's photo")
 async def patch_photo(request: Request, photo: UploadFile,
-                   session: AsyncSession = Depends(get_async_session)):
-    payload = await check_access_token(request)
+                      session: AsyncSession = Depends(get_async_session)):
+    payload = await check_token(request, True)
     id_ = int(payload["sub"])
     query = select(UserModel.photo).where(UserModel.id == id_)
     result = await session.execute(query)
@@ -179,8 +177,8 @@ async def patch_photo(request: Request, photo: UploadFile,
 
 @router.delete('/photo', summary="Delete user's photo")
 async def delete_photo(request: Request,
-                   session: AsyncSession = Depends(get_async_session)):
-    payload = await check_access_token(request)
+                       session: AsyncSession = Depends(get_async_session)):
+    payload = await check_token(request, True)
     try:
         id_ = int(payload["sub"])
         query = select(UserModel.photo).where(UserModel.id == id_)

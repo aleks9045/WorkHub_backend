@@ -8,17 +8,17 @@ services:
       - "5432:5432"
     env_file:
       - .env
-#  backend:
-#    container_name: backend
-#    depends_on:
-#      - db
-#    build: .
-#    ports:
-#      - "8000:8000"
-#    command: >
-#      /bin/sh -c "sleep 0.5 && alembic revision --autogenerate &&
-#                  alembic upgrade head &&
-#      uvicorn main:app --host 0.0.0.0 --port 8000"
+  backend:
+    container_name: backend
+    depends_on:
+      - db
+    build: .
+    ports:
+      - "8000:8000"
+    command: >
+      /bin/sh -c "sleep 0.5 && alembic revision --autogenerate &&
+                  alembic upgrade head &&
+      uvicorn main:app --host 0.0.0.0 --port 8000"
 #  nginx:
 #    build: nginx/
 #    container_name: nginx

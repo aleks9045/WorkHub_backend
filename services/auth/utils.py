@@ -4,7 +4,6 @@ from typing import Union, Any
 from fastapi import HTTPException
 from jose import jwt
 from passlib.context import CryptContext
-from starlette import status
 
 from backend.config import SECRET_JWT, SECRET_JWT_REFRESH
 
@@ -60,7 +59,7 @@ def create_refresh_token(subject: Union[str, Any]) -> str:
     return encoded_jwt
 
 
-async def check_access_token(request):
+async def check_token(request, type_: bool) -> dict:
     try:
         try:
             authorization = request.headers.get("Authorization").split(" ")
@@ -71,40 +70,18 @@ async def check_access_token(request):
             )
         if authorization[0] != "Selezenka":
             raise HTTPException(status_code=400, detail="Не угадал.")
-        payload = jwt.decode(authorization[1], JWT_SECRET_KEY, algorithms=[ALGORITHM])
+        if type_:
+            payload = jwt.decode(authorization[1], JWT_SECRET_KEY, algorithms=[ALGORITHM])
+        else:
+            payload = jwt.decode(authorization[1], JWT_SECRET_KEY, algorithms=[ALGORITHM])
         if datetime.fromtimestamp(payload["exp"]) < datetime.now():
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=401,
                 detail="Срок действия токена истёк."
             )
     except jwt.JWTError:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Не удалось подтвердить учетные данные."
-        )
-    return payload
-
-
-async def check_refresh_token(request):
-    try:
-        try:
-            authorization = request.headers.get("Authorization").split(" ")
-        except AttributeError:
-            raise HTTPException(
-                status_code=400,
-                detail="Отсутствует заголовок с токеном."
-            )
-        if authorization[0] != "Selezenka":
-            raise HTTPException(status_code=400, detail="Не угадал.")
-        payload = jwt.decode(authorization[1], JWT_REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
-        if datetime.fromtimestamp(payload["exp"]) < datetime.now():
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Срок действия токена истёк."
-            )
-    except jwt.JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=403,
             detail="Не удалось подтвердить учетные данные."
         )
     return payload
