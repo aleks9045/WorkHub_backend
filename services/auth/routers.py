@@ -5,6 +5,7 @@ import aiofiles
 from fastapi import UploadFile, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRouter
+from pydantic import EmailStr
 from sqlalchemy import insert, select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,7 +16,6 @@ from backend.services.auth.utils import get_hashed_password, check_password, ver
     create_access_token, create_refresh_token, check_token
 from backend.services.auth.models import UserModel
 from backend.services.files.models import FileModel
-from pydantic import EmailStr
 
 router = APIRouter(
     prefix="/auth",
@@ -54,7 +54,7 @@ async def create_user(email: EmailStr, name: str, full_name: str, password: str,
         await session.commit()
     except Exception:
         raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
-    return JSONResponse(status_code=200, content={"detail": "Пользователь был успешно добавлен"})
+    return JSONResponse(status_code=201, content={"detail": "Пользователь был успешно добавлен"})
 
 
 @router.post('/login', summary="Create access and refresh tokens")
@@ -76,7 +76,7 @@ async def login(email: EmailStr, password: str,
         )
     result = await session.execute(select(UserModel.id).where(UserModel.email == email))
     user_id = result.scalars().all()[0]
-    return JSONResponse(status_code=201, content={
+    return JSONResponse(status_code=200, content={
         "access_token": create_access_token(user_id),
         "refresh_token": create_refresh_token(user_id)
     })
@@ -97,25 +97,25 @@ async def get_new_tokens(request: Request,
     })
 
 
+@router.get('/logout', summary="Logout")
+async def logout(request: Request):
+    await check_token(request, True)
+    return Response(status_code=200)
+
+
 @router.get('/me', summary="Get information about user")
 async def get_user(request: Request, session: AsyncSession = Depends(get_async_session)):
     payload = await check_token(request, True)
-    query = select(UserModel.name, UserModel.full_name, UserModel.email, UserModel.photo).where(
+    query = select(UserModel.email, UserModel.name, UserModel.full_name, UserModel.photo).where(
         UserModel.id == int(payload["sub"]))
     result = await session.execute(query)
     result = result.all()
     if not result:
         raise HTTPException(status_code=404, detail="Пользователь не найден.")
-    return JSONResponse(status_code=200, content={"name": result[0][0],
-                                                  "full_name": result[0][1],
-                                                  "email": result[0][2],
+    return JSONResponse(status_code=200, content={"email": result[0][0],
+                                                  "name": result[0][1],
+                                                  "full_name": result[0][2],
                                                   "photo": result[0][3]})
-
-
-@router.get('/logout', summary="Logout")
-async def logout(request: Request):
-    await check_token(request, True)
-    return Response(status_code=200)
 
 
 @router.delete('/me', summary="Delete user")
@@ -192,3 +192,17 @@ async def delete_photo(request: Request,
         raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
 
     return Response(status_code=200)
+
+
+@router.get('/all', summary="List of all users", description="description")
+async def patch_user(session: AsyncSession = Depends(get_async_session)):
+    query = select(UserModel.email, UserModel.name, UserModel.full_name, UserModel.photo).where(1 == 1).order_by(UserModel.id)
+    result = await session.execute(query)
+    result = result.all()
+    res_dict = []
+    for i in result:
+        res_dict.append({"email": i[0],
+                         "name": i[1],
+                         "full_name": i[2],
+                         "photo": i[3]})
+    return JSONResponse(status_code=200, content=res_dict)

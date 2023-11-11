@@ -66,7 +66,7 @@ docker-compose up --build
 ### Headers:
 
 ```
-Content_Type: multipart/form-data
+ Content_Type: multipart/form-data
 ```
 
 ### Fields:
@@ -151,8 +151,8 @@ photo - string($binary)
 ### Headers:
 
 ```
-Content_Type: None
-Authorization: "Bearer" "access_token"
+ Content_Type: None
+ Authorization: "Bearer" "access_token"
 ```
 
 ### Fields:
@@ -168,9 +168,9 @@ Authorization: "Bearer" "access_token"
  401: {"detail": "Срок действия токена истёк."}
  403: {"detail": "Не удалось подтвердить учетные данные."}
  404: {"detail": "Пользователь не найден."}
- 200: {"name": name,
+ 200: {"email": email,
+       "name": name,
        "full_name": full_name,
-       "email": email,
        "photo": path_to_photo}
 ```
 
@@ -181,8 +181,8 @@ Authorization: "Bearer" "access_token"
 ### Headers:
 
 ```
-Content_Type: application/json
-Authorization: "Bearer" "access_token"
+ Content_Type: application/json
+ Authorization: "Bearer" "access_token"
 ```
 
 ### Fields:
@@ -208,8 +208,8 @@ Authorization: "Bearer" "access_token"
 ### Headers:
 
 ```
-Content_Type: None
-Authorization: "Bearer" "access_token"
+ Content_Type: None
+ Authorization: "Bearer" "access_token"
 ```
 
 ### Fields:
@@ -229,13 +229,39 @@ Authorization: "Bearer" "access_token"
 
 ##
 
+## auth/all [GET]
+
+### Headers:
+
+```
+ Content_Type: None
+```
+
+### Fields:
+
+```
+ None
+```
+
+### Responses:
+
+```
+ 200: [{"email": email,
+       "name": name,
+       "full_name": full_name,
+       "photo": path_to_photo},
+       {...},
+       ]
+```
+
+
 ## auth/logout [GET]
 
 ### Headers:
 
 ```
-Content_Type: None
-Authorization: "Bearer" "access_token"
+ Content_Type: None
+ Authorization: "Bearer" "access_token"
 ```
 
 ### Fields:
@@ -260,8 +286,8 @@ Authorization: "Bearer" "access_token"
 ### Headers:
 
 ```
-Content_Type: multipart/form-data
-Authorization: "Bearer" "access_token"
+ Content_Type: multipart/form-data
+ Authorization: "Bearer" "access_token"
 ```
 
 ### Fields:
@@ -287,8 +313,8 @@ Authorization: "Bearer" "access_token"
 ### Headers:
 
 ```
-Content_Type: None
-Authorization: "Bearer" "access_token"
+ Content_Type: None
+ Authorization: "Bearer" "access_token"
 ```
 
 ### Fields:
