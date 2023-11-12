@@ -24,7 +24,7 @@ router = APIRouter(
 
 
 @router.post('/register', summary="Create new user")
-async def create_user(email: EmailStr, name: str, full_name: str, password: str, photo: UploadFile = None,
+async def create_user(name: str, full_name: str, password: str, email: EmailStr = None, photo: UploadFile = None,
                       session: AsyncSession = Depends(get_async_session)):
     if check_password(password):
         pass
@@ -196,7 +196,8 @@ async def delete_photo(request: Request,
 
 @router.get('/all', summary="List of all users", description="description")
 async def patch_user(session: AsyncSession = Depends(get_async_session)):
-    query = select(UserModel.email, UserModel.name, UserModel.full_name, UserModel.photo).where(1 == 1).order_by(UserModel.id)
+    query = select(UserModel.email, UserModel.name, UserModel.full_name, UserModel.photo)\
+        .where(1 == 1).order_by(UserModel.id)
     result = await session.execute(query)
     result = result.all()
     res_dict = []
