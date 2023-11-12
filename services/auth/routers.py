@@ -24,7 +24,7 @@ router = APIRouter(
 
 
 @router.post('/register', summary="Create new user")
-async def create_user(name: str, full_name: str, password: str, email: EmailStr = None, photo: UploadFile = None,
+async def create_user(full_name: str, password: str, email: EmailStr = None, photo: UploadFile = None,
                       session: AsyncSession = Depends(get_async_session)):
     if check_password(password):
         pass
@@ -46,7 +46,6 @@ async def create_user(name: str, full_name: str, password: str, email: EmailStr 
         else:
             file_path = ""
         stmt = insert(UserModel).values(email=email,
-                                        name=name,
                                         full_name=full_name,
                                         photo=file_path,
                                         hashed_password=get_hashed_password(password))
@@ -58,7 +57,7 @@ async def create_user(name: str, full_name: str, password: str, email: EmailStr 
 
 
 @router.post('/login', summary="Create access and refresh tokens")
-async def login(email: EmailStr, password: str,
+async def login(password: str, email: EmailStr = None,
                 session: AsyncSession = Depends(get_async_session)):
     query = select(UserModel.hashed_password).where(UserModel.email == email)
     result = await session.execute(query)
@@ -140,8 +139,7 @@ async def patch_user(request: Request,
                      session: AsyncSession = Depends(get_async_session)):
     payload = await check_token(request, True)
     data = await request.json()
-    stmt = update(UserModel).where(UserModel.id == int(payload["sub"])).values(name=data["name"],
-                                                                               full_name=data["full_name"])
+    stmt = update(UserModel).where(UserModel.id == int(payload["sub"])).values(full_name=data["full_name"])
     await session.execute(stmt)
     await session.commit()
     return Response(status_code=200)
@@ -196,14 +194,12 @@ async def delete_photo(request: Request,
 
 @router.get('/all', summary="List of all users", description="description")
 async def patch_user(session: AsyncSession = Depends(get_async_session)):
-    query = select(UserModel.email, UserModel.name, UserModel.full_name, UserModel.photo)\
+    query = select(UserModel.full_name, UserModel.photo)\
         .where(1 == 1).order_by(UserModel.id)
     result = await session.execute(query)
     result = result.all()
     res_dict = []
     for i in result:
-        res_dict.append({"email": i[0],
-                         "name": i[1],
-                         "full_name": i[2],
-                         "photo": i[3]})
+        res_dict.append({"full_name": i[0],
+                         "photo": i[1]})
     return JSONResponse(status_code=200, content=res_dict)
