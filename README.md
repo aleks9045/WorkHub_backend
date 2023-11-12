@@ -72,8 +72,7 @@ docker-compose up --build
 ### Fields:
 
 ```
-email - string(required)
-name - string(required)
+email - string
 full_name - string(required)
 password - string(required)
 photo - string($binary)
@@ -100,7 +99,7 @@ photo - string($binary)
 ### Fields:
 
 ```
- email - string(required)
+ email - string
  password - string(required)
 ```
 
@@ -169,7 +168,6 @@ photo - string($binary)
  403: {"detail": "Не удалось подтвердить учетные данные."}
  404: {"detail": "Пользователь не найден."}
  200: {"email": email,
-       "name": name,
        "full_name": full_name,
        "photo": path_to_photo}
 ```
@@ -188,7 +186,6 @@ photo - string($binary)
 ### Fields:
 
 ```
- name - string(required)
  full_name - string(required)
 ```
 
@@ -247,7 +244,6 @@ photo - string($binary)
 
 ```
  200: [{"email": email,
-       "name": name,
        "full_name": full_name,
        "photo": path_to_photo},
        {...},

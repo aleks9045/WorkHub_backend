@@ -192,7 +192,7 @@ async def delete_photo(request: Request,
     return Response(status_code=200)
 
 
-@router.get('/all', summary="List of all users", description="description")
+@router.get('/all', summary="List of all users")
 async def patch_user(session: AsyncSession = Depends(get_async_session)):
     query = select(UserModel.full_name, UserModel.photo)\
         .where(1 == 1).order_by(UserModel.id)
