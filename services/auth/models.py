@@ -7,7 +7,7 @@ from backend.services.tasks.models import TaskModel
 class UserModel(Base):
     __tablename__ = "user"
     id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
-    email = Column(String, nullable=False, unique=True)
+    email = Column(String, nullable=True, unique=True)
     name = Column(String(32), nullable=False)
     full_name = Column(String(32), nullable=False)
     hashed_password = Column(String, nullable=False)
