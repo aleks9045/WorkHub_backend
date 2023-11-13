@@ -24,16 +24,25 @@ router = APIRouter(
 
 
 @router.post('/register', summary="Create new user")
-async def create_user(full_name: str, password: str, email: EmailStr = None, photo: UploadFile = None,
-                      session: AsyncSession = Depends(get_async_session)):
+async def create_user(full_name: str, password: str, yandex: str = None, email: EmailStr = None,
+                      photo: UploadFile = None, session: AsyncSession = Depends(get_async_session)):
     if check_password(password):
         pass
-    query = select(UserModel.id).where(UserModel.email == email)
-    result = await session.execute(query)
-    print(result.scalars().all())
-    print(bool(result.scalars().all()))
-    if result.scalars().all():
-        raise HTTPException(status_code=400, detail="Пользователь с такой почтой уже существует.")
+    if yandex is None:
+        query = select(UserModel.id).where(UserModel.email == email)
+        result = await session.execute(query)
+        print(result.scalars().all())
+        print(bool(result.scalars().all()))
+        if result.scalars().all():
+            raise HTTPException(status_code=400, detail="Пользователь с такой почтой уже существует.")
+    else:
+        query = select(UserModel.id).where(UserModel.yandex == yandex)
+        result = await session.execute(query)
+        print(result.scalars().all())
+        print(bool(result.scalars().all()))
+        if result.scalars().all():
+            raise HTTPException(status_code=400, detail="Такой пользователь уже существует.")
+
     try:
         if photo is not None:
             file_path = f'static/user_photo/{photo.filename}'

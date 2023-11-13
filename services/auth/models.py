@@ -11,6 +11,7 @@ class UserModel(Base):
     full_name = Column(String(32), nullable=False)
     hashed_password = Column(String, nullable=False)
     photo = Column(String, nullable=True)
+    yandex = Column(String, nullable=False)
 
 
 class UserTaskModel(Base):
