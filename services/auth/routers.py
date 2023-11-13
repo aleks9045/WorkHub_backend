@@ -31,6 +31,7 @@ async def create_user(full_name: str, password: str, yandex: str = None, email: 
     if yandex is None:
         query = select(UserModel.id).where(UserModel.email == email)
         result = await session.execute(query)
+        print("NO")
         print(result.scalars().all())
         print(bool(result.scalars().all()))
         if result.scalars().all():
@@ -38,6 +39,7 @@ async def create_user(full_name: str, password: str, yandex: str = None, email: 
     else:
         query = select(UserModel.id).where(UserModel.yandex == yandex)
         result = await session.execute(query)
+        print("YANDEX")
         print(result.scalars().all())
         print(bool(result.scalars().all()))
         if result.scalars().all():
