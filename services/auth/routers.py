@@ -59,6 +59,7 @@ async def create_user(full_name: str, password: str, yandex: str = None, email: 
         stmt = insert(UserModel).values(email=email,
                                         full_name=full_name,
                                         photo=file_path,
+                                        yandex=yandex,
                                         hashed_password=get_hashed_password(password))
         await session.execute(statement=stmt)
         await session.commit()
