@@ -3,12 +3,13 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 
 from services.auth.routers import router as auth_router
-import sys
 
 app = FastAPI()
 
 origins = [
-    "*"
+    "http://localhost",
+    "http://90.156.210.55",
+    "*",
 ]  # Сервера, которые могут отправлять запросы на Backend
 
 app.add_middleware(
