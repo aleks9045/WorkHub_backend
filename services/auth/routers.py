@@ -30,6 +30,8 @@ async def create_user(full_name: str, password: str, email: EmailStr = None, pho
         pass
     query = select(UserModel.id).where(UserModel.email == email)
     result = await session.execute(query)
+    print(result.scalars().all())
+    print(bool(result.scalars().all()))
     if result.scalars().all():
         raise HTTPException(status_code=400, detail="Пользователь с такой почтой уже существует.")
     try:
