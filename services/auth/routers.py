@@ -31,18 +31,20 @@ async def create_user(full_name: str, password: str, yandex: str = None, email: 
     if yandex is None:
         query = select(UserModel.id).where(UserModel.email == email)
         result = await session.execute(query)
+        result = result.scalars().all()
         print("NO")
-        print(result.scalars().all())
-        print(bool(result.scalars().all()))
-        if result.scalars().all():
+        print(result)
+        print(bool(result))
+        if result:
             raise HTTPException(status_code=400, detail="Пользователь с такой почтой уже существует.")
     else:
         query = select(UserModel.id).where(UserModel.yandex == yandex)
         result = await session.execute(query)
+        result = result.scalars().all()
         print("YANDEX")
-        print(result.scalars().all())
-        print(bool(result.scalars().all()))
-        if result.scalars().all():
+        print(result)
+        print(bool(result))
+        if result:
             raise HTTPException(status_code=400, detail="Такой пользователь уже существует.")
 
     try:
