@@ -40,7 +40,7 @@ async def create_user(full_name: str, password: str, yandex: str = None, email: 
         if result.scalars().all():
             raise HTTPException(status_code=400, detail="Пользователь с такой почтой уже существует.")
     elif email is None and yandex is not None:
-        result = await session.execute(select(UserModel.id).where(UserModel.email == email))
+        result = await session.execute(select(UserModel.id).where(UserModel.yandex == yandex))
         if result.scalars().all():
             raise HTTPException(status_code=400, detail="Такой пользователь уже существует.")
     else:
