@@ -77,6 +77,7 @@ async def login(password: str, yandex: str = None, email: EmailStr = None,
     if email is not None:
         result = await session.execute(select(UserModel.hashed_password).where(UserModel.email == email))
         result = result.scalars().all()
+        print(result)
         hashed_pass = result[0]
 
         if not result:
@@ -88,6 +89,7 @@ async def login(password: str, yandex: str = None, email: EmailStr = None,
     elif yandex is not None:
         result = await session.execute(select(UserModel.hashed_password).where(UserModel.yandex == yandex))
         result = result.scalars().all()
+        print(result)
         hashed_pass = result[0]
 
         if not result:
