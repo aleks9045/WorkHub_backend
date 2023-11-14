@@ -77,7 +77,9 @@ async def login(password: str, yandex: str = None, email: EmailStr = None,
     if email is not None:
         result = await session.execute(select(UserModel.hashed_password).where(UserModel.email == email))
         result = result.scalars().all()
-
+        print(result)
+        print(result)
+        print(result)
         if not result:
             raise HTTPException(status_code=400, detail="Неверно введена почта или пароль.")
 
@@ -88,8 +90,9 @@ async def login(password: str, yandex: str = None, email: EmailStr = None,
     elif yandex is not None:
         result = await session.execute(select(UserModel.hashed_password).where(UserModel.yandex == yandex))
         result = result.scalars().all()
-
-
+        print(result)
+        print(result)
+        print(result)
         if not result:
             raise HTTPException(status_code=400, detail="Неверно введен yandex или пароль.")
 
