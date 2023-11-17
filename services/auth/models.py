@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 
 from backend.database import Base
 from backend.services.tasks.models import TaskModel
+from backend.services.tasks.models import StatusModel
 
 
 class UserModel(Base):
@@ -13,7 +14,7 @@ class UserModel(Base):
     hashed_password = Column(String, nullable=False)
     photo = Column(String, nullable=True)
     specialization = Column(String, nullable=True)
-    status = Column(String, nullable=True)
+    status = Column(Integer, ForeignKey(StatusModel.id, ondelete="CASCADE"), nullable=False)
     superuser = Column(Boolean, nullable=False)
 
 

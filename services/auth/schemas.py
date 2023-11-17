@@ -1,20 +1,7 @@
-from sqlalchemy import Column, Integer, String
-
-from backend.database import Base
+from pydantic import BaseModel
 
 
-class TaskModel(Base):
-    __tablename__ = "task"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    description = Column(String(1024), nullable=False)
-    contact = Column(String, nullable=False)
-
-
-class StatusModel(Base):
-    __tablename__ = "status"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
+class StatusSchema(BaseModel):
     is_competent_in_payment_issue: bool
     is_competent_in_create_account: bool
     is_competent_in_contact_customer_service: bool

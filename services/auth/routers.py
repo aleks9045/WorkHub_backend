@@ -8,6 +8,7 @@ from pydantic import EmailStr
 from sqlalchemy import insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 sys.path.append("../../../GoodProject")
 
 from backend.database import get_async_session
@@ -15,6 +16,9 @@ from backend.services.auth.utils import get_hashed_password, check_password, ver
     create_access_token, create_refresh_token, check_token
 from backend.services.auth.models import UserModel
 from backend.services.files.models import FileModel
+from backend.services.tasks.models import StatusModel
+from backend.services.auth.schemas import StatusSchema
+
 
 router = APIRouter(
     prefix="/auth",
@@ -145,7 +149,7 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
                                                   "superuser": result[0][2],
                                                   "specialization": result[0][3],
                                                   "status": result[0][4],
-                                                  "photo": result[0][3]})
+                                                  "photo": result[0][5]})
 
 
 # @router.delete('/me', summary="Delete user")
@@ -246,6 +250,15 @@ async def patch_user(id_: int, specialization: str = None, status: str = None,
                      session: AsyncSession = Depends(get_async_session)):
     stmt = update(UserModel).where(UserModel.id == id_).values(specialization=specialization,
                                                                status=status)
+    await session.execute(stmt)
+    await session.commit()
+    return Response(status_code=200)
+
+
+@router.post('/status', summary="Add status")
+async def patch_user(schema: StatusSchema,
+                     session: AsyncSession = Depends(get_async_session)):
+    stmt = insert(StatusModel).values(**schema.dict())
     await session.execute(stmt)
     await session.commit()
     return Response(status_code=200)
