@@ -46,28 +46,28 @@ async def create_user(full_name: str, password: str, yandex: str = None, email: 
     else:
         raise HTTPException(status_code=400, detail="Введите почту.")
 
-    try:
-        if photo is not None:
-            file_path = f'static/user_photo/{photo.filename}'
-            async with aiofiles.open(file_path, 'wb') as out_file:
-                content = photo.file.read()
-                await out_file.write(content)
-            stmt = insert(FileModel).values(file_name=photo.filename, file_path=file_path)
-            await session.execute(statement=stmt)
-            await session.commit()
-        elif photo is None:
-            file_path = "static/user_photo/default.png"
-        else:
-            file_path = ""
-        stmt = insert(UserModel).values(email=email,
-                                        full_name=full_name,
-                                        photo=file_path,
-                                        yandex=yandex,
-                                        hashed_password=get_hashed_password(password))
+    # try:
+    if photo is not None:
+        file_path = f'static/user_photo/{photo.filename}'
+        async with aiofiles.open(file_path, 'wb') as out_file:
+            content = photo.file.read()
+            await out_file.write(content)
+        stmt = insert(FileModel).values(file_name=photo.filename, file_path=file_path)
         await session.execute(statement=stmt)
         await session.commit()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
+    elif photo is None:
+        file_path = "static/user_photo/default.png"
+    else:
+        file_path = ""
+    stmt = insert(UserModel).values(email=email,
+                                    full_name=full_name,
+                                    photo=file_path,
+                                    yandex=yandex,
+                                    hashed_password=get_hashed_password(password))
+    await session.execute(statement=stmt)
+    await session.commit()
+    # except Exception:
+    #     raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
     return JSONResponse(status_code=201, content={"detail": "Пользователь был успешно добавлен"})
 
 
