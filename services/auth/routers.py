@@ -1,3 +1,4 @@
+import os
 import sys
 
 import aiofiles
@@ -8,7 +9,6 @@ from pydantic import EmailStr
 from sqlalchemy import insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
 sys.path.append("../../../GoodProject")
 
 from backend.database import get_async_session
@@ -18,7 +18,6 @@ from backend.services.auth.models import UserModel
 from backend.services.files.models import FileModel
 from backend.services.tasks.models import StatusModel
 from backend.services.auth.schemas import StatusSchema
-
 
 router = APIRouter(
     prefix="/auth",
@@ -180,51 +179,51 @@ async def patch_user(request: Request,
     return Response(status_code=200)
 
 
-# @router.patch('/photo', summary="Update user's photo")
-# async def patch_photo(request: Request, photo: UploadFile,
-#                       session: AsyncSession = Depends(get_async_session)):
-#     payload = await check_token(request, True)
-#     id_ = int(payload["sub"])
-#     query = select(UserModel.photo).where(UserModel.id == id_)
-#     result = await session.execute(query)
-#     result = result.scalars().all()
-#     if result[0] != photo.filename and result[0] != "static/user_photo/default.png":
-#         os.remove(result[0])
-#     try:
-#         file_path = f'static/user_photo/{photo.filename}'
-#         async with aiofiles.open(file_path, 'wb') as out_file:
-#             content = photo.file.read()
-#             await out_file.write(content)
-#         stmt = update(FileModel).where(FileModel.file_path == result[0]).values(file_name=photo.filename,
-#                                                                                 file_path=file_path)
-#         await session.execute(statement=stmt)
-#         await session.commit()
-#         stmt = update(UserModel).where(UserModel.id == id_).values(photo=file_path)
-#         await session.execute(statement=stmt)
-#         await session.commit()
-#     except Exception:
-#         raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
-#
-#     return Response(status_code=200)
-#
-#
-# @router.delete('/photo', summary="Delete user's photo")
-# async def delete_photo(request: Request,
-#                        session: AsyncSession = Depends(get_async_session)):
-#     payload = await check_token(request, True)
-#     try:
-#         id_ = int(payload["sub"])
-#         query = select(UserModel.photo).where(UserModel.id == id_)
-#         result = await session.execute(query)
-#         result = result.scalars().all()
-#         os.remove(result[0])
-#         stmt = update(UserModel).where(UserModel.id == id_).values(photo="static/user_photo/default.png")
-#         await session.execute(statement=stmt)
-#         await session.commit()
-#     except Exception:
-#         raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
-#
-#     return Response(status_code=200)
+@router.patch('/photo', summary="Update user's photo")
+async def patch_photo(request: Request, photo: UploadFile,
+                      session: AsyncSession = Depends(get_async_session)):
+    payload = await check_token(request, True)
+    id_ = int(payload["sub"])
+    query = select(UserModel.photo).where(UserModel.id == id_)
+    result = await session.execute(query)
+    result = result.scalars().all()
+    if result[0] != photo.filename and result[0] != "static/user_photo/default.png":
+        os.remove(result[0])
+    try:
+        file_path = f'static/user_photo/{photo.filename}'
+        async with aiofiles.open(file_path, 'wb') as out_file:
+            content = photo.file.read()
+            await out_file.write(content)
+        stmt = update(FileModel).where(FileModel.file_path == result[0]).values(file_name=photo.filename,
+                                                                                file_path=file_path)
+        await session.execute(statement=stmt)
+        await session.commit()
+        stmt = update(UserModel).where(UserModel.id == id_).values(photo=file_path)
+        await session.execute(statement=stmt)
+        await session.commit()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
+
+    return Response(status_code=200)
+
+
+@router.delete('/photo', summary="Delete user's photo")
+async def delete_photo(request: Request,
+                       session: AsyncSession = Depends(get_async_session)):
+    payload = await check_token(request, True)
+    try:
+        id_ = int(payload["sub"])
+        query = select(UserModel.photo).where(UserModel.id == id_)
+        result = await session.execute(query)
+        result = result.scalars().all()
+        os.remove(result[0])
+        stmt = update(UserModel).where(UserModel.id == id_).values(photo="static/user_photo/default.png")
+        await session.execute(statement=stmt)
+        await session.commit()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
+
+    return Response(status_code=200)
 
 
 @router.get('/all', summary="List of all users")
@@ -258,7 +257,53 @@ async def patch_user(id_: int, specialization: str = None, status: str = None,
 @router.post('/status', summary="Add status")
 async def patch_user(schema: StatusSchema,
                      session: AsyncSession = Depends(get_async_session)):
-    stmt = insert(StatusModel).values(**schema.dict())
+    stmt = insert(StatusModel).values(is_competent_in_payment_issue=schema.dict()['is_competent_in_payment_issue'],
+                                      is_competent_in_create_account=schema.dict()['is_competent_in_create_account'],
+                                      is_competent_in_contact_customer_service=schema.dict()[
+                                          'is_competent_in_contact_customer_service'],
+                                      is_competent_in_get_invoice=schema.dict()['is_competent_in_get_invoice'],
+                                      is_competent_in_track_order=schema.dict()['is_competent_in_track_order'],
+                                      is_competent_in_get_refund=schema.dict()['is_competent_in_get_refund'],
+                                      is_competent_in_contact_human_agent=schema.dict()[
+                                          'is_competent_in_contact_human_agent'],
+                                      is_competent_in_recover_password=schema.dict()[
+                                          'is_competent_in_recover_password'],
+                                      is_competent_in_change_order=schema.dict()['is_competent_in_change_order'],
+                                      is_competent_in_delete_account=schema.dict()['is_competent_in_delete_account'],
+                                      is_competent_in_complaint=schema.dict()['is_competent_in_complaint'],
+                                      is_competent_in_check_invoices=schema.dict()['is_competent_in_check_invoices'],
+                                      is_competent_in_review=schema.dict()['is_competent_in_review'],
+                                      is_competent_in_check_refund_policy=schema.dict()[
+                                          'is_competent_in_check_refund_policy'],
+                                      is_competent_in_delivery_options=schema.dict()[
+                                          'is_competent_in_delivery_options'],
+                                      is_competent_in_check_cancellation_fee=schema.dict()[
+                                          'is_competent_in_check_cancellation_fee'],
+                                      is_competent_in_track_refund=schema.dict()['is_competent_in_track_refund'],
+                                      is_competent_in_check_payment_methods=schema.dict()[
+                                          'is_competent_in_check_payment_methods'],
+                                      is_competent_in_switch_account=schema.dict()['is_competent_in_switch_account'],
+                                      is_competent_in_newsletter_subscription=schema.dict()[
+                                          'is_competent_in_newsletter_subscription'],
+                                      is_competent_in_delivery_period=schema.dict()['is_competent_in_delivery_period'],
+                                      is_competent_in_edit_account=schema.dict()['is_competent_in_edit_account'],
+                                      is_competent_in_registration_problems=schema.dict()[
+                                          'is_competent_in_registration_problems'],
+                                      is_competent_in_change_shipping_address=schema.dict()[
+                                          'is_competent_in_change_shipping_address'],
+                                      is_competent_in_set_up_shipping_address=schema.dict()[
+                                          'is_competent_in_set_up_shipping_address'],
+                                      is_competent_in_place_order=schema.dict()['is_competent_in_place_order'],
+                                      is_competent_in_cancel_order=schema.dict()['is_competent_in_cancel_order'],
+                                      is_competent_in_check_invoice=schema.dict()['is_competent_in_check_invoice'], )
     await session.execute(stmt)
     await session.commit()
+    return Response(status_code=200)
+
+
+@router.get('/status', summary="Add status")
+async def patch_user(session: AsyncSession = Depends(get_async_session)):
+    query = select(StatusModel)
+    result = await session.execute(query)
+    result = result.all()
     return Response(status_code=200)
