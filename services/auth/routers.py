@@ -133,7 +133,7 @@ async def logout(request: Request):
 @router.get('/me', summary="Get information about user")
 async def get_user(request: Request, session: AsyncSession = Depends(get_async_session)):
     payload = await check_token(request, True)
-    query = select(UserModel.email, UserModel.full_name, UserModel.photo).where(
+    query = select(UserModel.email, UserModel.full_name, UserModel.superuser, UserModel.photo).where(
         UserModel.id == int(payload["sub"]))
     result = await session.execute(query)
     result = result.all()
@@ -141,7 +141,8 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
         raise HTTPException(status_code=404, detail="Пользователь не найден.")
     return JSONResponse(status_code=200, content={"email": result[0][0],
                                                   "full_name": result[0][1],
-                                                  "photo": result[0][2]})
+                                                  "superuser": result[0][2],
+                                                  "photo": result[0][3]})
 
 
 # @router.delete('/me', summary="Delete user")
