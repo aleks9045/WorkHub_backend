@@ -44,7 +44,7 @@ async def create_user(full_name: str, password: str, yandex: str = None, email: 
         if result.scalars().all():
             raise HTTPException(status_code=400, detail="Такой пользователь уже существует.")
     else:
-        raise HTTPException(status_code=400, detail="Хотя бы одно из полей email и yandex не должно быть пустым.")
+        raise HTTPException(status_code=400, detail="Введите почту.")
 
     try:
         if photo is not None:
@@ -95,9 +95,8 @@ async def login(password: str, yandex: str = None, email: EmailStr = None,
         hashed_pass = result[0]
         result = await session.execute(select(UserModel.id).where(UserModel.yandex == yandex))
         user_id = result.scalars().all()[0]
-
     else:
-        raise HTTPException(status_code=400, detail="Хотя бы одно из полей email и yandex не должно быть пустым.")
+        raise HTTPException(status_code=400, detail="Введите почту.")
     if not verify_password(password, hashed_pass):
         raise HTTPException(status_code=400, detail="Неверно введена почта или пароль.")
     return JSONResponse(status_code=200, content={

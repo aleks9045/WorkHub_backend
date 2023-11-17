@@ -73,7 +73,7 @@ async def check_token(request, type_: bool) -> dict:
         if type_:
             payload = jwt.decode(authorization[1], JWT_SECRET_KEY, algorithms=[ALGORITHM])
         else:
-            payload = jwt.decode(authorization[1], JWT_SECRET_KEY, algorithms=[ALGORITHM])
+            payload = jwt.decode(authorization[1], JWT_REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
         if datetime.fromtimestamp(payload["exp"]) < datetime.now():
             raise HTTPException(
                 status_code=401,
