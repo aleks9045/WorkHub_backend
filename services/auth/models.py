@@ -14,7 +14,7 @@ class UserModel(Base):
     hashed_password = Column(String, nullable=False)
     photo = Column(String, nullable=True)
     specialization = Column(String, nullable=True)
-    status = Column(Integer, ForeignKey(StatusModel.id, ondelete="CASCADE"), nullable=False)
+    status = Column(Integer, ForeignKey(StatusModel.id, ondelete="CASCADE"), nullable=True)
     superuser = Column(Boolean, nullable=False)
 
 
