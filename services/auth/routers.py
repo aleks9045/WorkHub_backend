@@ -145,21 +145,21 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
                                                   "photo": result[0][2]})
 
 
-@router.delete('/me', summary="Delete user")
-async def delete_user(request: Request,
-                      session: AsyncSession = Depends(get_async_session)):
-    payload = await check_token(request, True)
-
-    query = select(UserModel.photo).where(UserModel.id == int(payload["sub"]))
-    result = await session.execute(query)
-    result = result.scalars().all()
-    os.remove(result[0])
-
-    stmt = delete(UserModel).where(UserModel.id == int(payload["sub"]))
-    await session.execute(stmt)
-    await session.commit()
-
-    return Response(status_code=200)
+# @router.delete('/me', summary="Delete user")
+# async def delete_user(request: Request,
+#                       session: AsyncSession = Depends(get_async_session)):
+#     payload = await check_token(request, True)
+#
+#     query = select(UserModel.photo).where(UserModel.id == int(payload["sub"]))
+#     result = await session.execute(query)
+#     result = result.scalars().all()
+#     os.remove(result[0])
+#
+#     stmt = delete(UserModel).where(UserModel.id == int(payload["sub"]))
+#     await session.execute(stmt)
+#     await session.commit()
+#
+#     return Response(status_code=200)
 
 
 @router.patch('/me', summary="Change user's information")
@@ -173,51 +173,51 @@ async def patch_user(request: Request,
     return Response(status_code=200)
 
 
-@router.patch('/photo', summary="Update user's photo")
-async def patch_photo(request: Request, photo: UploadFile,
-                      session: AsyncSession = Depends(get_async_session)):
-    payload = await check_token(request, True)
-    id_ = int(payload["sub"])
-    query = select(UserModel.photo).where(UserModel.id == id_)
-    result = await session.execute(query)
-    result = result.scalars().all()
-    if result[0] != photo.filename and result[0] != "static/user_photo/default.png":
-        os.remove(result[0])
-    try:
-        file_path = f'static/user_photo/{photo.filename}'
-        async with aiofiles.open(file_path, 'wb') as out_file:
-            content = photo.file.read()
-            await out_file.write(content)
-        stmt = update(FileModel).where(FileModel.file_path == result[0]).values(file_name=photo.filename,
-                                                                                file_path=file_path)
-        await session.execute(statement=stmt)
-        await session.commit()
-        stmt = update(UserModel).where(UserModel.id == id_).values(photo=file_path)
-        await session.execute(statement=stmt)
-        await session.commit()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
-
-    return Response(status_code=200)
-
-
-@router.delete('/photo', summary="Delete user's photo")
-async def delete_photo(request: Request,
-                       session: AsyncSession = Depends(get_async_session)):
-    payload = await check_token(request, True)
-    try:
-        id_ = int(payload["sub"])
-        query = select(UserModel.photo).where(UserModel.id == id_)
-        result = await session.execute(query)
-        result = result.scalars().all()
-        os.remove(result[0])
-        stmt = update(UserModel).where(UserModel.id == id_).values(photo="static/user_photo/default.png")
-        await session.execute(statement=stmt)
-        await session.commit()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
-
-    return Response(status_code=200)
+# @router.patch('/photo', summary="Update user's photo")
+# async def patch_photo(request: Request, photo: UploadFile,
+#                       session: AsyncSession = Depends(get_async_session)):
+#     payload = await check_token(request, True)
+#     id_ = int(payload["sub"])
+#     query = select(UserModel.photo).where(UserModel.id == id_)
+#     result = await session.execute(query)
+#     result = result.scalars().all()
+#     if result[0] != photo.filename and result[0] != "static/user_photo/default.png":
+#         os.remove(result[0])
+#     try:
+#         file_path = f'static/user_photo/{photo.filename}'
+#         async with aiofiles.open(file_path, 'wb') as out_file:
+#             content = photo.file.read()
+#             await out_file.write(content)
+#         stmt = update(FileModel).where(FileModel.file_path == result[0]).values(file_name=photo.filename,
+#                                                                                 file_path=file_path)
+#         await session.execute(statement=stmt)
+#         await session.commit()
+#         stmt = update(UserModel).where(UserModel.id == id_).values(photo=file_path)
+#         await session.execute(statement=stmt)
+#         await session.commit()
+#     except Exception:
+#         raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
+#
+#     return Response(status_code=200)
+#
+#
+# @router.delete('/photo', summary="Delete user's photo")
+# async def delete_photo(request: Request,
+#                        session: AsyncSession = Depends(get_async_session)):
+#     payload = await check_token(request, True)
+#     try:
+#         id_ = int(payload["sub"])
+#         query = select(UserModel.photo).where(UserModel.id == id_)
+#         result = await session.execute(query)
+#         result = result.scalars().all()
+#         os.remove(result[0])
+#         stmt = update(UserModel).where(UserModel.id == id_).values(photo="static/user_photo/default.png")
+#         await session.execute(statement=stmt)
+#         await session.commit()
+#     except Exception:
+#         raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
+#
+#     return Response(status_code=200)
 
 
 @router.get('/all', summary="List of all users")
