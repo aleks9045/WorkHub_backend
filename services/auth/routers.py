@@ -133,7 +133,8 @@ async def logout(request: Request):
 @router.get('/me', summary="Get information about user")
 async def get_user(request: Request, session: AsyncSession = Depends(get_async_session)):
     payload = await check_token(request, True)
-    query = select(UserModel.email, UserModel.full_name, UserModel.superuser, UserModel.specialization, UserModel.status, UserModel.photo).where(
+    query = select(UserModel.email, UserModel.full_name, UserModel.superuser, UserModel.specialization,
+                   UserModel.status, UserModel.photo).where(
         UserModel.id == int(payload["sub"]))
     result = await session.execute(query)
     result = result.all()
@@ -225,7 +226,7 @@ async def patch_user(request: Request,
 @router.get('/all', summary="List of all users")
 async def patch_user(session: AsyncSession = Depends(get_async_session)):
     query = select(UserModel.id, UserModel.superuser, UserModel.full_name, UserModel.specialization, UserModel.status,
-                   UserModel.photo).where(1 == 1).order_by(UserModel.id)
+                   UserModel.email, UserModel.photo).where(1 == 1).order_by(UserModel.id)
     result = await session.execute(query)
     result = result.all()
     res_dict = []
@@ -235,7 +236,8 @@ async def patch_user(session: AsyncSession = Depends(get_async_session)):
                              "full_name": i[2],
                              "specialization": i[3],
                              "status": i[4],
-                             "photo": i[5]})
+                             "email": i[5],
+                             "photo": i[6]})
     return JSONResponse(status_code=200, content=res_dict)
 
 
