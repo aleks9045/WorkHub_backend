@@ -7,10 +7,11 @@ from pydantic import EmailStr
 from sqlalchemy import insert, select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 sys.path.append("../../../GoodProject")
 
 from backend.database import get_async_session
-from backend.services.auth.models import UserModel
+from backend.services.tasks.models import TaskModel
 
 
 router = APIRouter(
@@ -22,7 +23,7 @@ router = APIRouter(
 @router.post('/add', summary="Create new task")
 async def create_task(description: str, contact: str,
                       session: AsyncSession = Depends(get_async_session)):
-    stmt = insert(UserModel).values(description=description,
+    stmt = insert(TaskModel).values(description=description,
                                     contact=contact)
     await session.execute(statement=stmt)
     await session.commit()

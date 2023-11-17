@@ -1,4 +1,4 @@
-from sqlalchemy import Column, MetaData, Integer, String, DATE, ForeignKey
+from sqlalchemy import Column, Integer, String
 
 from backend.database import Base
 
