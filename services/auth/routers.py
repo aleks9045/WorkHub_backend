@@ -24,8 +24,10 @@ router = APIRouter(
 
 
 @router.post('/register', summary="Create new user")
-async def create_user(full_name: str, password: str, yandex: str = None, email: EmailStr = None,
-                      photo: UploadFile = None, session: AsyncSession = Depends(get_async_session)):
+async def create_user(full_name: str, password: str, superuser: bool = False, yandex: str = None,
+                      email: EmailStr = None,
+                      specialization: str = None, status: str = None, photo: UploadFile = None,
+                      session: AsyncSession = Depends(get_async_session)):
     if check_password(password):
         pass
     if yandex is not None and email is not None:
@@ -46,28 +48,31 @@ async def create_user(full_name: str, password: str, yandex: str = None, email: 
     else:
         raise HTTPException(status_code=400, detail="Введите почту.")
 
-    # try:
-    if photo is not None:
-        file_path = f'static/user_photo/{photo.filename}'
-        async with aiofiles.open(file_path, 'wb') as out_file:
-            content = photo.file.read()
-            await out_file.write(content)
-        stmt = insert(FileModel).values(file_name=photo.filename, file_path=file_path)
+    try:
+        if photo is not None:
+            file_path = f'static/user_photo/{photo.filename}'
+            async with aiofiles.open(file_path, 'wb') as out_file:
+                content = photo.file.read()
+                await out_file.write(content)
+            stmt = insert(FileModel).values(file_name=photo.filename, file_path=file_path)
+            await session.execute(statement=stmt)
+            await session.commit()
+        elif photo is None:
+            file_path = "static/user_photo/default.png"
+        else:
+            file_path = ""
+        stmt = insert(UserModel).values(email=email,
+                                        full_name=full_name,
+                                        photo=file_path,
+                                        yandex=yandex,
+                                        superuser=superuser,
+                                        specialization=specialization,
+                                        status=status,
+                                        hashed_password=get_hashed_password(password))
         await session.execute(statement=stmt)
         await session.commit()
-    elif photo is None:
-        file_path = "static/user_photo/default.png"
-    else:
-        file_path = ""
-    stmt = insert(UserModel).values(email=email,
-                                    full_name=full_name,
-                                    photo=file_path,
-                                    yandex=yandex,
-                                    hashed_password=get_hashed_password(password))
-    await session.execute(statement=stmt)
-    await session.commit()
-    # except Exception:
-    #     raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
     return JSONResponse(status_code=201, content={"detail": "Пользователь был успешно добавлен"})
 
 
@@ -217,12 +222,25 @@ async def delete_photo(request: Request,
 
 @router.get('/all', summary="List of all users")
 async def patch_user(session: AsyncSession = Depends(get_async_session)):
-    query = select(UserModel.full_name, UserModel.photo) \
+    query = select(UserModel.id, UserModel.full_name, UserModel.specialization, UserModel.status, UserModel.photo) \
         .where(1 == 1).order_by(UserModel.id)
     result = await session.execute(query)
     result = result.all()
     res_dict = []
     for i in result:
-        res_dict.append({"full_name": i[0],
-                         "photo": i[1]})
+        res_dict.append({"id": i[0],
+                         "full_name": i[1],
+                         "specialization": i[2],
+                         "status": i[3],
+                         "photo": i[4]})
     return JSONResponse(status_code=200, content=res_dict)
+
+
+@router.patch('/proffessional', summary="Change user's information")
+async def patch_user(id_: int, specialization: str = None, status: str = None,
+                     session: AsyncSession = Depends(get_async_session)):
+    stmt = update(UserModel).where(UserModel.id == id_).values(specialization=specialization,
+                                                               status=status)
+    await session.execute(stmt)
+    await session.commit()
+    return Response(status_code=200)

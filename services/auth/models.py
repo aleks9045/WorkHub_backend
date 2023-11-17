@@ -13,6 +13,8 @@ class UserModel(Base):
     hashed_password = Column(String, nullable=False)
     photo = Column(String, nullable=True)
     specialization = Column(String, nullable=True)
+    status = Column(String, nullable=True)
+    superuser = Column(Boolean, nullable=False)
 
 
 class UserTaskModel(Base):
