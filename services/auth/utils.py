@@ -7,7 +7,7 @@ from passlib.context import CryptContext
 
 from backend.config import SECRET_JWT, SECRET_JWT_REFRESH
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 1  # 30 minutes
+ACCESS_TOKEN_EXPIRE_MINUTES = 5  # 30 minutes
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 * 2  # 14 days
 ALGORITHM = "HS256"
 JWT_SECRET_KEY = SECRET_JWT
@@ -46,7 +46,7 @@ def check_password(password: str) -> bool:
 
 
 def create_access_token(subject: Union[str, Any]) -> str:
-    expires_delta = datetime.utcnow() + timedelta(seconds=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expires_delta = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode = {"exp": expires_delta, "sub": str(subject)}
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, ALGORITHM)
     return encoded_jwt
