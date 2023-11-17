@@ -227,7 +227,6 @@ async def patch_user(session: AsyncSession = Depends(get_async_session)):
     result = result.all()
     res_dict = []
     for i in result:
-        print(i[1])
         if not i[1]:
             res_dict.append({"id": i[0],
                              "full_name": i[2],
