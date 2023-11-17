@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 
 from backend.database import Base
 from backend.services.tasks.models import TaskModel
@@ -12,6 +12,8 @@ class UserModel(Base):
     full_name = Column(String(32), nullable=False)
     hashed_password = Column(String, nullable=False)
     photo = Column(String, nullable=True)
+    specialization = Column(String, nullable=True)
+    admin = Column(Boolean, nullable=False)
 
 
 class UserTaskModel(Base):
