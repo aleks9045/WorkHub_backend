@@ -1,4 +1,3 @@
-import os
 import sys
 
 import aiofiles
@@ -6,7 +5,7 @@ from fastapi import UploadFile, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRouter
 from pydantic import EmailStr
-from sqlalchemy import insert, select, delete, update
+from sqlalchemy import insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 sys.path.append("../../../GoodProject")
@@ -222,17 +221,20 @@ async def patch_user(request: Request,
 
 @router.get('/all', summary="List of all users")
 async def patch_user(session: AsyncSession = Depends(get_async_session)):
-    query = select(UserModel.id, UserModel.full_name, UserModel.specialization, UserModel.status, UserModel.photo) \
-        .where(1 == 1).order_by(UserModel.id)
+    query = select(UserModel.id, UserModel.superuser, UserModel.full_name, UserModel.specialization, UserModel.status,
+                   UserModel.photo).where(1 == 1).order_by(UserModel.id)
     result = await session.execute(query)
     result = result.all()
     res_dict = []
     for i in result:
-        res_dict.append({"id": i[0],
-                         "full_name": i[1],
-                         "specialization": i[2],
-                         "status": i[3],
-                         "photo": i[4]})
+        if i[1]:
+            continue
+        else:
+            res_dict.append({"id": i[0],
+                             "full_name": i[2],
+                             "specialization": i[3],
+                             "status": i[4],
+                             "photo": i[5]})
     return JSONResponse(status_code=200, content=res_dict)
 
 
