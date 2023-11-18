@@ -24,7 +24,7 @@ async def create_task(description: str, contact: str,
                       session: AsyncSession = Depends(get_async_session)):
     response = requests.post(f'http://ml:4000/api/ml_model?utterance={description}')
     response_json = response.json()
-
+    category = str(response_json['category'])
     query = select(UserModel.superuser, UserModel.email, UserModel.busy).where(1 == 1).order_by(UserModel.id)
     result = await session.execute(query)
     result = result.all()
@@ -62,7 +62,6 @@ async def create_task(description: str, contact: str,
         result_status = result.all()
         index = 0
         keys = result.keys()
-        category = str(response_json['category'])
         for k in keys:
             print(k, category)
             if k.endswith(category) and result_status[0][index]:
