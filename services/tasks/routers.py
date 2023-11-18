@@ -62,6 +62,7 @@ async def create_task(description: str, contact: str,
         result_status = result.all()
         index = 0
         keys = result.keys()
+        print(response_json['category'])
         for k in keys:
             print(k, result_status[0][index])
             if k.endswith(response_json['category'] and result_status[0][index]):
