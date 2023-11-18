@@ -62,10 +62,10 @@ async def create_task(description: str, contact: str,
         result_status = result.all()
         index = 0
         keys = result.keys()
-        print(response_json['category'])
+        category = str(response_json['category'])
         for k in keys:
-            print(k, result_status[0][index])
-            if k.endswith(str(response_json['category']) and result_status[0][index]):
+            print(k, category)
+            if k.endswith(category) and result_status[0][index]:
                 professionals[i[2]] = i[1]
             index += 1
     if professionals != {}:
