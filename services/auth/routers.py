@@ -292,12 +292,13 @@ async def patch_user(session: AsyncSession = Depends(get_async_session)):
                        StatusModel.is_competent_in_check_invoice).where(StatusModel.email == i[4])
         result = await session.execute(query)
         status_result = result.all()
-        res_dict.append({"id": i[0],
-                         "full_name": i[2],
-                         "specialization": i[3],
-                         "status": list(status_result[0]),
-                         "email": i[4],
-                         "photo": i[5]})
+        if not i[2]:
+            res_dict.append({"id": i[0],
+                             "full_name": i[2],
+                             "specialization": i[3],
+                             "status": list(status_result[0]),
+                             "email": i[4],
+                             "photo": i[5]})
     return JSONResponse(status_code=200, content=res_dict)
 
 
