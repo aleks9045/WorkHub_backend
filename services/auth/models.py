@@ -14,7 +14,6 @@ class UserModel(Base):
     hashed_password = Column(String, nullable=False)
     photo = Column(String, nullable=True)
     specialization = Column(String, nullable=True)
-    status = Column(Integer, ForeignKey(StatusModel.id, ondelete="CASCADE"), nullable=True)
     superuser = Column(Boolean, nullable=False)
 
 
@@ -24,3 +23,11 @@ class UserTaskModel(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user = Column(String, ForeignKey(UserModel.email, ondelete="CASCADE"), nullable=False)
     task = Column(Integer, ForeignKey(TaskModel.id, ondelete="CASCADE"), nullable=False)
+
+
+# class UserStatusModel(Base):
+#     __tablename__ = "user_status"
+#
+#     id = Column(Integer, primary_key=True, autoincrement=True)
+#     user = Column(String, ForeignKey(UserModel.email, ondelete="CASCADE"), nullable=False)
+#     status = Column(Integer, ForeignKey(StatusModel.id, ondelete="CASCADE"), nullable=False)

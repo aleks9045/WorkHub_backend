@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 
 class StatusSchema(BaseModel):
+    email: str
     is_competent_in_payment_issue: bool
     is_competent_in_create_account: bool
     is_competent_in_contact_customer_service: bool

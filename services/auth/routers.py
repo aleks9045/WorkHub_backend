@@ -28,7 +28,7 @@ router = APIRouter(
 @router.post('/register', summary="Create new user")
 async def create_user(full_name: str, password: str, superuser: bool = False, yandex: str = None,
                       email: EmailStr = None,
-                      specialization: str = None, status: int = None, photo: UploadFile = None,
+                      specialization: str = None, photo: UploadFile = None,
                       session: AsyncSession = Depends(get_async_session)):
     if check_password(password):
         pass
@@ -50,31 +50,30 @@ async def create_user(full_name: str, password: str, superuser: bool = False, ya
     else:
         raise HTTPException(status_code=400, detail="Введите почту.")
 
-    # try:
-    if photo is not None:
-        file_path = f'static/user_photo/{photo.filename}'
-        async with aiofiles.open(file_path, 'wb') as out_file:
-            content = photo.file.read()
-            await out_file.write(content)
-        stmt = insert(FileModel).values(file_name=photo.filename, file_path=file_path)
+    try:
+        if photo is not None:
+            file_path = f'static/user_photo/{photo.filename}'
+            async with aiofiles.open(file_path, 'wb') as out_file:
+                content = photo.file.read()
+                await out_file.write(content)
+            stmt = insert(FileModel).values(file_name=photo.filename, file_path=file_path)
+            await session.execute(statement=stmt)
+            await session.commit()
+        elif photo is None:
+            file_path = "static/user_photo/default.png"
+        else:
+            file_path = ""
+        stmt = insert(UserModel).values(email=email,
+                                        full_name=full_name,
+                                        photo=file_path,
+                                        yandex=yandex,
+                                        superuser=superuser,
+                                        specialization=specialization,
+                                        hashed_password=get_hashed_password(password))
         await session.execute(statement=stmt)
         await session.commit()
-    elif photo is None:
-        file_path = "static/user_photo/default.png"
-    else:
-        file_path = ""
-    stmt = insert(UserModel).values(email=email,
-                                    full_name=full_name,
-                                    photo=file_path,
-                                    yandex=yandex,
-                                    superuser=superuser,
-                                    specialization=specialization,
-                                    status=status,
-                                    hashed_password=get_hashed_password(password))
-    await session.execute(statement=stmt)
-    await session.commit()
-    # except Exception:
-    #     raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
     return JSONResponse(status_code=201, content={"detail": "Пользователь был успешно добавлен"})
 
 
@@ -141,43 +140,43 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
         UserModel.id == int(payload["sub"]))
     result = await session.execute(query)
     result = result.all()
-    # query = select(StatusModel.is_competent_in_payment_issue,
-    #                StatusModel.is_competent_in_create_account,
-    #                StatusModel.is_competent_in_contact_customer_service,
-    #                StatusModel.is_competent_in_get_invoice,
-    #                StatusModel.is_competent_in_track_order,
-    #                StatusModel.is_competent_in_get_refund,
-    #                StatusModel.is_competent_in_contact_human_agent,
-    #                StatusModel.is_competent_in_recover_password,
-    #                StatusModel.is_competent_in_change_order,
-    #                StatusModel.is_competent_in_delete_account,
-    #                StatusModel.is_competent_in_complaint,
-    #                StatusModel.is_competent_in_check_invoices,
-    #                StatusModel.is_competent_in_review,
-    #                StatusModel.is_competent_in_check_refund_policy,
-    #                StatusModel.is_competent_in_delivery_options,
-    #                StatusModel.is_competent_in_check_cancellation_fee,
-    #                StatusModel.is_competent_in_track_refund,
-    #                StatusModel.is_competent_in_check_payment_methods,
-    #                StatusModel.is_competent_in_switch_account,
-    #                StatusModel.is_competent_in_newsletter_subscription,
-    #                StatusModel.is_competent_in_delivery_period,
-    #                StatusModel.is_competent_in_edit_account,
-    #                StatusModel.is_competent_in_registration_problems,
-    #                StatusModel.is_competent_in_change_shipping_address,
-    #                StatusModel.is_competent_in_set_up_shipping_address,
-    #                StatusModel.is_competent_in_place_order,
-    #                StatusModel.is_competent_in_cancel_order,
-    #                StatusModel.is_competent_in_check_invoice).where(StatusModel.id == result[0][4])
-    # result = await session.execute(query)
-    # status_result = result.all()
+    query = select(StatusModel.is_competent_in_payment_issue,
+                   StatusModel.is_competent_in_create_account,
+                   StatusModel.is_competent_in_contact_customer_service,
+                   StatusModel.is_competent_in_get_invoice,
+                   StatusModel.is_competent_in_track_order,
+                   StatusModel.is_competent_in_get_refund,
+                   StatusModel.is_competent_in_contact_human_agent,
+                   StatusModel.is_competent_in_recover_password,
+                   StatusModel.is_competent_in_change_order,
+                   StatusModel.is_competent_in_delete_account,
+                   StatusModel.is_competent_in_complaint,
+                   StatusModel.is_competent_in_check_invoices,
+                   StatusModel.is_competent_in_review,
+                   StatusModel.is_competent_in_check_refund_policy,
+                   StatusModel.is_competent_in_delivery_options,
+                   StatusModel.is_competent_in_check_cancellation_fee,
+                   StatusModel.is_competent_in_track_refund,
+                   StatusModel.is_competent_in_check_payment_methods,
+                   StatusModel.is_competent_in_switch_account,
+                   StatusModel.is_competent_in_newsletter_subscription,
+                   StatusModel.is_competent_in_delivery_period,
+                   StatusModel.is_competent_in_edit_account,
+                   StatusModel.is_competent_in_registration_problems,
+                   StatusModel.is_competent_in_change_shipping_address,
+                   StatusModel.is_competent_in_set_up_shipping_address,
+                   StatusModel.is_competent_in_place_order,
+                   StatusModel.is_competent_in_cancel_order,
+                   StatusModel.is_competent_in_check_invoice).where(StatusModel.email == result[0][0])
+    result = await session.execute(query)
+    status_result = result.all()
     if not result:
         raise HTTPException(status_code=404, detail="Пользователь не найден.")
     return JSONResponse(status_code=200, content={"email": result[0][0],
                                                   "full_name": result[0][1],
                                                   "superuser": result[0][2],
                                                   "specialization": result[0][3],
-                                                  # "status": list(status_result[0]),
+                                                  "status": list(status_result[0]),
                                                   "photo": result[0][5]})
 
 
@@ -258,7 +257,7 @@ async def delete_photo(request: Request,
 
 @router.get('/all', summary="List of all users")
 async def patch_user(session: AsyncSession = Depends(get_async_session)):
-    query = select(UserModel.id, UserModel.superuser, UserModel.full_name, UserModel.specialization, UserModel.status,
+    query = select(UserModel.id, UserModel.superuser, UserModel.full_name, UserModel.specialization,
                    UserModel.email, UserModel.photo).where(1 == 1).order_by(UserModel.id)
     result = await session.execute(query)
     result = result.all()
@@ -291,16 +290,15 @@ async def patch_user(session: AsyncSession = Depends(get_async_session)):
                        StatusModel.is_competent_in_set_up_shipping_address,
                        StatusModel.is_competent_in_place_order,
                        StatusModel.is_competent_in_cancel_order,
-                       StatusModel.is_competent_in_check_invoice).where(StatusModel.id == i[0])
+                       StatusModel.is_competent_in_check_invoice).where(StatusModel.email == i[4])
         result = await session.execute(query)
         status_result = result.all()
         res_dict.append({"id": i[0],
                          "full_name": i[2],
                          "specialization": i[3],
                          "status": list(status_result[0]),
-                         "email": i[5],
-                         "photo": i[6]})
-        print(list(status_result[0]))
+                         "email": i[4],
+                         "photo": i[5]})
     return JSONResponse(status_code=200, content=res_dict)
 
 
