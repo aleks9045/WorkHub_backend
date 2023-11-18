@@ -12,7 +12,7 @@ app = FastAPI()
 origins = [
     "http://localhost",
     "http://90.156.210.55",
-    "*",
+    "*"
 ]  # Сервера, которые могут отправлять запросы на Backend
 
 app.add_middleware(
