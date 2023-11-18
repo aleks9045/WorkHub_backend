@@ -139,6 +139,7 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
                    UserModel.photo).where(UserModel.id == int(payload["sub"]))
     result = await session.execute(query)
     result = result.all()
+    print(result)
     query = select(StatusModel.is_competent_in_payment_issue,
                    StatusModel.is_competent_in_create_account,
                    StatusModel.is_competent_in_contact_customer_service,
