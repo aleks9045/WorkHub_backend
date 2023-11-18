@@ -60,12 +60,13 @@ async def create_task(description: str, contact: str,
                        StatusModel.is_competent_in_check_invoice).where(StatusModel.email == i[1])
         result = await session.execute(query)
         result_status = result.all()
-        print(result_status)
+        index = 0
         keys = result.keys()
         for k in keys:
-            print(k)
-            if k.endswith(response_json['category']):
+            print(k, result_status[0][index])
+            if k.endswith(response_json['category'] and result_status[0][index]):
                 professionals[i[2]] = i[1]
+            index += 1
     if professionals != {}:
         best = professionals[min(professionals.keys())]
         best_min = min(professionals.keys())
