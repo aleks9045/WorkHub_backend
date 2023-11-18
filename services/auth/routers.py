@@ -136,8 +136,7 @@ async def logout(request: Request):
 async def get_user(request: Request, session: AsyncSession = Depends(get_async_session)):
     payload = await check_token(request, True)
     query = select(UserModel.email, UserModel.full_name, UserModel.superuser, UserModel.specialization,
-                   UserModel.status, UserModel.photo).where(
-        UserModel.id == int(payload["sub"]))
+                   UserModel.photo).where(UserModel.id == int(payload["sub"]))
     result = await session.execute(query)
     result = result.all()
     query = select(StatusModel.is_competent_in_payment_issue,
@@ -177,7 +176,7 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
                                                   "superuser": result[0][2],
                                                   "specialization": result[0][3],
                                                   "status": list(status_result[0]),
-                                                  "photo": result[0][5]})
+                                                  "photo": result[0][4]})
 
 
 # @router.delete('/me', summary="Delete user")
@@ -319,4 +318,3 @@ async def patch_user(schema: StatusSchema,
     await session.execute(stmt)
     await session.commit()
     return Response(status_code=200)
-
