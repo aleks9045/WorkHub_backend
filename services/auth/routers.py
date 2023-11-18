@@ -306,6 +306,7 @@ async def add_status(schema: StatusSchema,
                      session: AsyncSession = Depends(get_async_session)):
     result = await session.execute(select(StatusModel.id).where(UserModel.email == schema.dict()["email"]))
     if result.scalars().all():
+        print(result.scalars().all())
         return "ошибка"
     stmt = insert(StatusModel).values(**schema.dict())
     await session.execute(stmt)
