@@ -15,7 +15,7 @@ class StatusModel(Base):
     __tablename__ = "status"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    email = Column(String, nullable=True, unique=False)
+    email = Column(String, nullable=True, unique=True)
     is_competent_in_payment_issue = Column(Boolean, nullable=False)
     is_competent_in_create_account = Column(Boolean, nullable=False)
     is_competent_in_contact_customer_service = Column(Boolean, nullable=False)
