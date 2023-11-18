@@ -175,7 +175,7 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
                                                   "full_name": result[0][1],
                                                   "superuser": result[0][2],
                                                   "specialization": result[0][3],
-                                                  "status": list(status_result[0]),
+                                                  # "status": list(status_result[0]),
                                                   "photo": result[0][4]})
 
 
