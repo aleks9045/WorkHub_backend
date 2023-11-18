@@ -90,14 +90,15 @@ async def create_task(description: str, contact: str,
 
 @router.get('/get', summary="Get task")
 async def create_task(email: str, session: AsyncSession = Depends(get_async_session)):
-    query = select(TaskModel.description, TaskModel.contact, TaskModel.category, TaskModel.importance, TaskModel.id).where(
+    query = select(TaskModel.description, TaskModel.contact, TaskModel.category, TaskModel.importance,
+                   TaskModel.id).where(
         TaskModel.email == email)
     result = await session.execute(query)
     result = result.all()
     res_dict = []
     for i in result:
         res_dict.append({"id": i[4],
-                        "description": i[0],
+                         "description": i[0],
                          "contact": i[1],
                          "category": i[2],
                          "importance": i[3]})
@@ -106,7 +107,6 @@ async def create_task(email: str, session: AsyncSession = Depends(get_async_sess
 
 @router.delete('/delete', summary="Delete task")
 async def create_task(id_: int, session: AsyncSession = Depends(get_async_session)):
-
     query = select(TaskModel.email).where(TaskModel.id == id_)
     result = await session.execute(query)
     result_email = result.all()
@@ -122,3 +122,27 @@ async def create_task(id_: int, session: AsyncSession = Depends(get_async_sessio
     query = delete(TaskModel).where(TaskModel.id == id_)
     result = await session.execute(query)
     return JSONResponse(status_code=200, content="Успешно")
+
+
+@router.get('/all', summary="Get all tasks")
+async def all_task(session: AsyncSession = Depends(get_async_session)):
+    query = select(TaskModel.description, TaskModel.contact, TaskModel.category, TaskModel.importance,
+                   TaskModel.id, TaskModel.email).where(1 == 1).order_by(TaskModel.id)
+    result = await session.execute(query)
+    result = result.all()
+    res_dict = []
+    for i in result:
+        query = select(UserModel.email, UserModel.full_name, UserModel.photo).where(UserModel.email == i[5])
+        result = await session.execute(query)
+        result_user = result.all()
+        for u in result_user:
+            res_dict.append({"id": i[4],
+                             "description": i[0],
+                             "contact": i[1],
+                             "category": i[2],
+                             "importance": i[3],
+                             "email": u[0],
+                             "full_name": u[1],
+                             "photo": u[2]
+                             })
+    return JSONResponse(status_code=200, content=res_dict)
