@@ -59,8 +59,11 @@ async def create_task(description: str, contact: str,
                        StatusModel.is_competent_in_cancel_order,
                        StatusModel.is_competent_in_check_invoice).where(StatusModel.email == i[1])
         result = await session.execute(query)
+        result_status = result.all()
+        print(result_status)
         keys = result.keys()
         for k in keys:
+            print(k)
             if k.endswith(response_json['category']):
                 professionals[i[2]] = i[1]
     if professionals != {}:
