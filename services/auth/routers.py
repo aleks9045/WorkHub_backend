@@ -304,10 +304,10 @@ async def patch_user(session: AsyncSession = Depends(get_async_session)):
 @router.post('/status', summary="Add status")
 async def add_status(schema: StatusSchema,
                      session: AsyncSession = Depends(get_async_session)):
-    result = await session.execute(select(StatusModel.id).where(UserModel.email == schema.dict()["email"]))
-    if result.scalars().all():
-        print(result.scalars().all())
-        return "ошибка"
+    # result = await session.execute(select(StatusModel.id).where(UserModel.email == schema.dict()["email"]))
+    # if result.scalars().all():
+    #     print(result.scalars().all())
+    #     return "ошибка"
     stmt = insert(StatusModel).values(**schema.dict())
     await session.execute(stmt)
     await session.commit()
