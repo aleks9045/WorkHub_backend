@@ -166,7 +166,7 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
                    StatusModel.is_competent_in_set_up_shipping_address,
                    StatusModel.is_competent_in_place_order,
                    StatusModel.is_competent_in_cancel_order,
-                   StatusModel.is_competent_in_check_invoice).where(StatusModel.email == result[0][0])
+                   StatusModel.is_competent_in_check_invoice).where(StatusModel.email == result_user[0][0])
     result = await session.execute(query)
     status_result = result.all()
     if not result:
