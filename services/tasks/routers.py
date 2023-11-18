@@ -65,8 +65,8 @@ async def create_task(description: str, contact: str,
         print(response_json['category'])
         for k in keys:
             print(k, result_status[0][index])
-            # if k.endswith(response_json['category'] and result_status[0][index]):
-            #     professionals[i[2]] = i[1]
+            if k.endswith(str(response_json['category']) and result_status[0][index]):
+                professionals[i[2]] = i[1]
             index += 1
     if professionals != {}:
         best = professionals[min(professionals.keys())]
