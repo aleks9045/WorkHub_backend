@@ -1,10 +1,10 @@
 import sys
 
 import requests
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRouter
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 sys.path.append("../../../GoodProject")
@@ -25,10 +25,10 @@ async def create_task(description: str, contact: str,
     response = requests.post(f'http://ml:4000/api/ml_model?utterance={description}')
     response_json = response.json()
 
-    query = select(UserModel.superuser, UserModel.email, UserModel.specialization).where(1 == 1).order_by(UserModel.id)
+    query = select(UserModel.superuser, UserModel.email, UserModel.busy).where(1 == 1).order_by(UserModel.id)
     result = await session.execute(query)
     result = result.all()
-    res_dict = []
+    professionals = dict()
     for i in result:
         query = select(StatusModel.is_competent_in_payment_issue,
                        StatusModel.is_competent_in_create_account,
@@ -59,35 +59,66 @@ async def create_task(description: str, contact: str,
                        StatusModel.is_competent_in_cancel_order,
                        StatusModel.is_competent_in_check_invoice).where(StatusModel.email == i[1])
         result = await session.execute(query)
-        status_result = result.all()
         keys = result.keys()
         for k in keys:
             if k.endswith(response_json['category']):
-                stmt = insert(TaskModel).values(email=i[1],
-                                                description=description,
-                                                category=response_json['category'],
-                                                importance=response_json['importance'],
-                                                contact=contact)
-                await session.execute(statement=stmt)
-                await session.commit()
+                professionals[i[2]] = i[1]
+    if professionals != {}:
+        best = professionals[min(professionals.keys())]
+        best_min = min(professionals.keys())
+    else:
+        raise HTTPException(status_code=400, detail="Нет ответчиков.")
 
-                return JSONResponse(status_code=201, content={"email": i[1],
-                                                              "description": description,
-                                                              "category": response_json['category'],
-                                                              "importance": response_json['importance'],
-                                                              "contact": contact})
+    stmt = insert(TaskModel).values(email=best,
+                                    description=description,
+                                    category=response_json['category'],
+                                    importance=response_json['importance'],
+                                    contact=contact)
+    await session.execute(statement=stmt)
+    await session.commit()
+
+    stmt = update(UserModel).where(UserModel.email == best).values(busy=best_min + 1)
+    await session.execute(statement=stmt)
+    await session.commit()
+
+    return JSONResponse(status_code=201, content={"email": best,
+                                                  "description": description,
+                                                  "category": response_json['category'],
+                                                  "importance": response_json['importance'],
+                                                  "contact": contact})
 
 
-@router.get('/get', summary="Create new task")
+@router.get('/get', summary="Get task")
 async def create_task(email: str, session: AsyncSession = Depends(get_async_session)):
-    query = select(TaskModel.description, TaskModel.contact, TaskModel.category, TaskModel.importance).where(
+    query = select(TaskModel.description, TaskModel.contact, TaskModel.category, TaskModel.importance, TaskModel.id).where(
         TaskModel.email == email)
     result = await session.execute(query)
     result = result.all()
     res_dict = []
     for i in result:
-        res_dict.append({"description": i[0],
+        res_dict.append({"id": i[4],
+                        "description": i[0],
                          "contact": i[1],
                          "category": i[2],
                          "importance": i[3]})
     return JSONResponse(status_code=200, content=res_dict)
+
+
+@router.delete('/delete', summary="Delete task")
+async def create_task(id_: int, session: AsyncSession = Depends(get_async_session)):
+
+    query = select(TaskModel.email).where(TaskModel.id == id_)
+    result = await session.execute(query)
+    result_email = result.all()
+
+    query = select(UserModel.busy).where(UserModel.email == result_email[0][0])
+    result = await session.execute(query)
+    result_busy = result.all()
+
+    stmt = update(UserModel).where(UserModel.email == result_email[0][0]).values(busy=result_busy[0][0] - 1)
+    await session.execute(statement=stmt)
+    await session.commit()
+
+    query = delete(TaskModel).where(TaskModel.id == id_)
+    result = await session.execute(query)
+    return JSONResponse(status_code=200, content="Успешно")

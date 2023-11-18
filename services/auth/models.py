@@ -13,7 +13,7 @@ class UserModel(Base):
     full_name = Column(String(32), nullable=False)
     hashed_password = Column(String, nullable=False)
     photo = Column(String, nullable=True)
-    specialization = Column(String, nullable=True)
+    busy = Column(Integer, nullable=True)
     superuser = Column(Boolean, nullable=False)
 
 

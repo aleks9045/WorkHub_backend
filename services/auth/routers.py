@@ -28,7 +28,7 @@ router = APIRouter(
 @router.post('/register', summary="Create new user")
 async def create_user(full_name: str, password: str, superuser: bool = False, yandex: str = None,
                       email: EmailStr = None,
-                      specialization: str = None, photo: UploadFile = None,
+                      busy: int = 0, photo: UploadFile = None,
                       session: AsyncSession = Depends(get_async_session)):
     if check_password(password):
         pass
@@ -68,7 +68,7 @@ async def create_user(full_name: str, password: str, superuser: bool = False, ya
                                         photo=file_path,
                                         yandex=yandex,
                                         superuser=superuser,
-                                        specialization=specialization,
+                                        busy=busy,
                                         hashed_password=get_hashed_password(password))
         await session.execute(statement=stmt)
         await session.commit()
@@ -135,7 +135,7 @@ async def logout(request: Request):
 @router.get('/me', summary="Get information about user")
 async def get_user(request: Request, session: AsyncSession = Depends(get_async_session)):
     payload = await check_token(request, True)
-    query = select(UserModel.email, UserModel.full_name, UserModel.superuser, UserModel.specialization,
+    query = select(UserModel.email, UserModel.full_name, UserModel.superuser,
                    UserModel.photo).where(UserModel.id == int(payload["sub"]))
     result = await session.execute(query)
     result_user = result.all()
@@ -169,15 +169,13 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
                    StatusModel.is_competent_in_check_invoice).where(StatusModel.email == result_user[0][0])
     result = await session.execute(query)
     status_result = result.all()
-
     if not result:
         raise HTTPException(status_code=404, detail="Пользователь не найден.")
     return JSONResponse(status_code=200, content={"email": result_user[0][0],
                                                   "full_name": result_user[0][1],
                                                   "superuser": result_user[0][2],
-                                                  "specialization": result_user[0][3],
                                                   "status": list(status_result[0]),
-                                                  "photo": result_user[0][4]})
+                                                  "photo": result_user[0][3]})
 
 
 # @router.delete('/me', summary="Delete user")
@@ -256,9 +254,9 @@ async def delete_photo(request: Request,
 
 
 @router.get('/all', summary="List of all users")
-async def patch_user(session: AsyncSession = Depends(get_async_session)):
-    query = select(UserModel.id, UserModel.superuser, UserModel.full_name, UserModel.specialization,
-                   UserModel.email, UserModel.photo).where(1 == 1).order_by(UserModel.id)
+async def all_user(session: AsyncSession = Depends(get_async_session)):
+    query = select(UserModel.id, UserModel.superuser, UserModel.full_name,
+                   UserModel.email, UserModel.photo, UserModel.busy).where(1 == 1).order_by(UserModel.id)
     result = await session.execute(query)
     result = result.all()
     res_dict = []
@@ -290,17 +288,16 @@ async def patch_user(session: AsyncSession = Depends(get_async_session)):
                        StatusModel.is_competent_in_set_up_shipping_address,
                        StatusModel.is_competent_in_place_order,
                        StatusModel.is_competent_in_cancel_order,
-                       StatusModel.is_competent_in_check_invoice).where(StatusModel.email == i[4])
+                       StatusModel.is_competent_in_check_invoice).where(StatusModel.email == i[3])
         result = await session.execute(query)
         status_result = result.all()
-        print(status_result)
         if not i[1]:
             res_dict.append({"id": i[0],
                              "full_name": i[2],
-                             "specialization": i[3],
                              "status": list(status_result[0]),
-                             "email": i[4],
-                             "photo": i[5]})
+                             "email": i[3],
+                             "busy": i[5],
+                             "photo": i[4]})
     return JSONResponse(status_code=200, content=res_dict)
 
 
@@ -318,7 +315,7 @@ async def add_status(schema: StatusSchema,
     return Response(status_code=200)
 
 
-@router.patch('/status', summary="Add status")
+@router.patch('/status', summary="Get status")
 async def patch_status(schema: StatusSchema,
                      session: AsyncSession = Depends(get_async_session)):
     stmt = update(StatusModel).where(StatusModel.email == schema.dict()["email"]).values(**schema.dict())

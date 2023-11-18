@@ -7,7 +7,7 @@ from passlib.context import CryptContext
 
 from backend.config import SECRET_JWT, SECRET_JWT_REFRESH
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 5  # 30 minutes
+ACCESS_TOKEN_EXPIRE_MINUTES = 5  # 5 minutes
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 * 2  # 14 days
 ALGORITHM = "HS256"
 JWT_SECRET_KEY = SECRET_JWT
