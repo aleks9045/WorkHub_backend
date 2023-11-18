@@ -169,6 +169,7 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
                    StatusModel.is_competent_in_check_invoice).where(StatusModel.email == result[0][0])
     result = await session.execute(query)
     status_result = result.all()
+    print(status_result)
     if not result:
         raise HTTPException(status_code=404, detail="Пользователь не найден.")
     return JSONResponse(status_code=200, content={"email": result[0][0],
