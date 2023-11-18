@@ -292,7 +292,8 @@ async def patch_user(session: AsyncSession = Depends(get_async_session)):
                        StatusModel.is_competent_in_check_invoice).where(StatusModel.email == i[4])
         result = await session.execute(query)
         status_result = result.all()
-        if not i[2]:
+        print(bool(i[1]))
+        if not i[1]:
             res_dict.append({"id": i[0],
                              "full_name": i[2],
                              "specialization": i[3],
