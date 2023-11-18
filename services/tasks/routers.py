@@ -119,8 +119,9 @@ async def create_task(id_: int, session: AsyncSession = Depends(get_async_sessio
     await session.execute(statement=stmt)
     await session.commit()
 
-    query = delete(TaskModel).where(TaskModel.id == id_)
-    result = await session.execute(query)
+    stmt = delete(TaskModel).where(TaskModel.id == id_)
+    await session.execute(stmt)
+    await session.commit()
     return JSONResponse(status_code=200, content="Успешно")
 
 
