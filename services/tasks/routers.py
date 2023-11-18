@@ -25,7 +25,6 @@ async def create_task(description: str, contact: str,
     response = requests.post(f'http://ml:4000/api/ml_model?utterance={description}')
     response_json = response.json()
 
-
     query = select(UserModel.superuser, UserModel.email, UserModel.specialization).where(1 == 1).order_by(UserModel.id)
     result = await session.execute(query)
     result = result.all()
@@ -73,7 +72,22 @@ async def create_task(description: str, contact: str,
                 await session.commit()
 
                 return JSONResponse(status_code=201, content={"email": i[1],
-                                                "description": description,
-                                                "category": response_json['category'],
-                                                "importance": response_json['importance'],
-                                                "contact": contact})
+                                                              "description": description,
+                                                              "category": response_json['category'],
+                                                              "importance": response_json['importance'],
+                                                              "contact": contact})
+
+
+@router.get('/get', summary="Create new task")
+async def create_task(email: str, session: AsyncSession = Depends(get_async_session)):
+    query = select(TaskModel.description, TaskModel.contact, TaskModel.category, TaskModel.importance).where(
+        TaskModel.email == email)
+    result = await session.execute(query)
+    result = result.all()
+    res_dict = []
+    for i in result:
+        res_dict.append({"description": i[0],
+                         "contact": i[1],
+                         "category": i[2],
+                         "importance": i[3]})
+    return JSONResponse(status_code=200, content=res_dict)
