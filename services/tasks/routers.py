@@ -63,7 +63,6 @@ async def create_task(description: str, contact: str,
         index = 0
         keys = result.keys()
         for k in keys:
-            print(k, category)
             if k.endswith(category) and result_status[0][index]:
                 professionals[i[2]] = i[1]
             index += 1

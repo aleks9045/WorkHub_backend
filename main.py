@@ -5,6 +5,8 @@ from starlette.staticfiles import StaticFiles
 from services.auth.routers import router as auth_router
 from services.tasks.routers import router as task_router
 
+from prometheus_fastapi_instrumentator import Instrumentator
+
 app = FastAPI()
 
 origins = [
@@ -27,3 +29,5 @@ app.include_router(auth_router)
 app.include_router(task_router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+Instrumentator().instrument(app).expose(app)
