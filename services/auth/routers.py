@@ -138,8 +138,7 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
     query = select(UserModel.email, UserModel.full_name, UserModel.superuser, UserModel.specialization,
                    UserModel.photo).where(UserModel.id == int(payload["sub"]))
     result = await session.execute(query)
-    result = result.all()
-    print(result)
+    result_user = result.all()
     query = select(StatusModel.is_competent_in_payment_issue,
                    StatusModel.is_competent_in_create_account,
                    StatusModel.is_competent_in_contact_customer_service,
@@ -170,15 +169,14 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
                    StatusModel.is_competent_in_check_invoice).where(StatusModel.email == result[0][0])
     result = await session.execute(query)
     status_result = result.all()
-    print(status_result)
     if not result:
         raise HTTPException(status_code=404, detail="Пользователь не найден.")
-    return JSONResponse(status_code=200, content={"email": result[0][0],
-                                                  "full_name": result[0][1],
-                                                  "superuser": result[0][2],
-                                                  "specialization": result[0][3],
+    return JSONResponse(status_code=200, content={"email": result_user[0][0],
+                                                  "full_name": result_user[0][1],
+                                                  "superuser": result_user[0][2],
+                                                  "specialization": result_user[0][3],
                                                   "status": list(status_result[0]),
-                                                  "photo": result[0][4]})
+                                                  "photo": result_user[0][4]})
 
 
 # @router.delete('/me', summary="Delete user")
