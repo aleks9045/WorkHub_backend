@@ -7,8 +7,11 @@ class TaskModel(Base):
     __tablename__ = "task"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String, nullable=True, unique=True)
     description = Column(String(1024), nullable=False)
     contact = Column(String, nullable=False)
+    category = Column(String, nullable=True)
+    importance = Column(String, nullable=True)
 
 
 class StatusModel(Base):

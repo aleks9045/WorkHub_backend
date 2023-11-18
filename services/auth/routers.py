@@ -169,6 +169,7 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
                    StatusModel.is_competent_in_check_invoice).where(StatusModel.email == result_user[0][0])
     result = await session.execute(query)
     status_result = result.all()
+
     if not result:
         raise HTTPException(status_code=404, detail="Пользователь не найден.")
     return JSONResponse(status_code=200, content={"email": result_user[0][0],
@@ -292,7 +293,7 @@ async def patch_user(session: AsyncSession = Depends(get_async_session)):
                        StatusModel.is_competent_in_check_invoice).where(StatusModel.email == i[4])
         result = await session.execute(query)
         status_result = result.all()
-        print(bool(i[1]))
+        print(status_result)
         if not i[1]:
             res_dict.append({"id": i[0],
                              "full_name": i[2],

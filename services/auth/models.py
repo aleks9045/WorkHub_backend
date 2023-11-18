@@ -17,10 +17,10 @@ class UserModel(Base):
     superuser = Column(Boolean, nullable=False)
 
 
-class UserTaskModel(Base):
-    __tablename__ = "user_task"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user = Column(String, ForeignKey(UserModel.email, ondelete="CASCADE"), nullable=False)
-    task = Column(Integer, ForeignKey(TaskModel.id, ondelete="CASCADE"), nullable=False)
+# class UserTaskModel(Base):
+#     __tablename__ = "user_task"
+#
+#     id = Column(Integer, primary_key=True, autoincrement=True)
+#     user = Column(String, ForeignKey(UserModel.email, ondelete="CASCADE"), nullable=False)
+#     task = Column(Integer, ForeignKey(TaskModel.id, ondelete="CASCADE"), nullable=False)
 
