@@ -1,7 +1,10 @@
+import json
 import os
 import sys
 
 import aiofiles
+import pandas as pd
+import requests
 from fastapi import UploadFile, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRouter
@@ -28,7 +31,7 @@ router = APIRouter(
 @router.post('/register', summary="Create new user")
 async def create_user(full_name: str, password: str, superuser: bool = False, yandex: str = None,
                       email: EmailStr = None,
-                      specialization: str = None, status: str = None, photo: UploadFile = None,
+                      specialization: str = None, status: int = None, photo: UploadFile = None,
                       session: AsyncSession = Depends(get_async_session)):
     if check_password(password):
         pass
@@ -50,31 +53,31 @@ async def create_user(full_name: str, password: str, superuser: bool = False, ya
     else:
         raise HTTPException(status_code=400, detail="Введите почту.")
 
-    try:
-        if photo is not None:
-            file_path = f'static/user_photo/{photo.filename}'
-            async with aiofiles.open(file_path, 'wb') as out_file:
-                content = photo.file.read()
-                await out_file.write(content)
-            stmt = insert(FileModel).values(file_name=photo.filename, file_path=file_path)
-            await session.execute(statement=stmt)
-            await session.commit()
-        elif photo is None:
-            file_path = "static/user_photo/default.png"
-        else:
-            file_path = ""
-        stmt = insert(UserModel).values(email=email,
-                                        full_name=full_name,
-                                        photo=file_path,
-                                        yandex=yandex,
-                                        superuser=superuser,
-                                        specialization=specialization,
-                                        status=status,
-                                        hashed_password=get_hashed_password(password))
+    # try:
+    if photo is not None:
+        file_path = f'static/user_photo/{photo.filename}'
+        async with aiofiles.open(file_path, 'wb') as out_file:
+            content = photo.file.read()
+            await out_file.write(content)
+        stmt = insert(FileModel).values(file_name=photo.filename, file_path=file_path)
         await session.execute(statement=stmt)
         await session.commit()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
+    elif photo is None:
+        file_path = "static/user_photo/default.png"
+    else:
+        file_path = ""
+    stmt = insert(UserModel).values(email=email,
+                                    full_name=full_name,
+                                    photo=file_path,
+                                    yandex=yandex,
+                                    superuser=superuser,
+                                    specialization=specialization,
+                                    status=status,
+                                    hashed_password=get_hashed_password(password))
+    await session.execute(statement=stmt)
+    await session.commit()
+    # except Exception:
+    #     raise HTTPException(status_code=400, detail="Произошла неизвестная ошибка.")
     return JSONResponse(status_code=201, content={"detail": "Пользователь был успешно добавлен"})
 
 
@@ -141,13 +144,43 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
         UserModel.id == int(payload["sub"]))
     result = await session.execute(query)
     result = result.all()
+    query = select(StatusModel.is_competent_in_payment_issue,
+                   StatusModel.is_competent_in_create_account,
+                   StatusModel.is_competent_in_contact_customer_service,
+                   StatusModel.is_competent_in_get_invoice,
+                   StatusModel.is_competent_in_track_order,
+                   StatusModel.is_competent_in_get_refund,
+                   StatusModel.is_competent_in_contact_human_agent,
+                   StatusModel.is_competent_in_recover_password,
+                   StatusModel.is_competent_in_change_order,
+                   StatusModel.is_competent_in_delete_account,
+                   StatusModel.is_competent_in_complaint,
+                   StatusModel.is_competent_in_check_invoices,
+                   StatusModel.is_competent_in_review,
+                   StatusModel.is_competent_in_check_refund_policy,
+                   StatusModel.is_competent_in_delivery_options,
+                   StatusModel.is_competent_in_check_cancellation_fee,
+                   StatusModel.is_competent_in_track_refund,
+                   StatusModel.is_competent_in_check_payment_methods,
+                   StatusModel.is_competent_in_switch_account,
+                   StatusModel.is_competent_in_newsletter_subscription,
+                   StatusModel.is_competent_in_delivery_period,
+                   StatusModel.is_competent_in_edit_account,
+                   StatusModel.is_competent_in_registration_problems,
+                   StatusModel.is_competent_in_change_shipping_address,
+                   StatusModel.is_competent_in_set_up_shipping_address,
+                   StatusModel.is_competent_in_place_order,
+                   StatusModel.is_competent_in_cancel_order,
+                   StatusModel.is_competent_in_check_invoice).where(StatusModel.id == result[0][4])
+    result = await session.execute(query)
+    status_result = result.all()
     if not result:
         raise HTTPException(status_code=404, detail="Пользователь не найден.")
     return JSONResponse(status_code=200, content={"email": result[0][0],
                                                   "full_name": result[0][1],
                                                   "superuser": result[0][2],
                                                   "specialization": result[0][3],
-                                                  "status": result[0][4],
+                                                  "status": list(status_result[0]),
                                                   "photo": result[0][5]})
 
 
@@ -234,13 +267,43 @@ async def patch_user(session: AsyncSession = Depends(get_async_session)):
     result = result.all()
     res_dict = []
     for i in result:
-        if not i[1]:
-            res_dict.append({"id": i[0],
-                             "full_name": i[2],
-                             "specialization": i[3],
-                             "status": i[4],
-                             "email": i[5],
-                             "photo": i[6]})
+        query = select(StatusModel.is_competent_in_payment_issue,
+                       StatusModel.is_competent_in_create_account,
+                       StatusModel.is_competent_in_contact_customer_service,
+                       StatusModel.is_competent_in_get_invoice,
+                       StatusModel.is_competent_in_track_order,
+                       StatusModel.is_competent_in_get_refund,
+                       StatusModel.is_competent_in_contact_human_agent,
+                       StatusModel.is_competent_in_recover_password,
+                       StatusModel.is_competent_in_change_order,
+                       StatusModel.is_competent_in_delete_account,
+                       StatusModel.is_competent_in_complaint,
+                       StatusModel.is_competent_in_check_invoices,
+                       StatusModel.is_competent_in_review,
+                       StatusModel.is_competent_in_check_refund_policy,
+                       StatusModel.is_competent_in_delivery_options,
+                       StatusModel.is_competent_in_check_cancellation_fee,
+                       StatusModel.is_competent_in_track_refund,
+                       StatusModel.is_competent_in_check_payment_methods,
+                       StatusModel.is_competent_in_switch_account,
+                       StatusModel.is_competent_in_newsletter_subscription,
+                       StatusModel.is_competent_in_delivery_period,
+                       StatusModel.is_competent_in_edit_account,
+                       StatusModel.is_competent_in_registration_problems,
+                       StatusModel.is_competent_in_change_shipping_address,
+                       StatusModel.is_competent_in_set_up_shipping_address,
+                       StatusModel.is_competent_in_place_order,
+                       StatusModel.is_competent_in_cancel_order,
+                       StatusModel.is_competent_in_check_invoice).where(StatusModel.id == i[0])
+        result = await session.execute(query)
+        status_result = result.all()
+        res_dict.append({"id": i[0],
+                         "full_name": i[2],
+                         "specialization": i[3],
+                         "status": list(status_result[0]),
+                         "email": i[5],
+                         "photo": i[6]})
+        print(list(status_result[0]))
     return JSONResponse(status_code=200, content=res_dict)
 
 
@@ -257,45 +320,7 @@ async def patch_user(id_: int, specialization: str = None, status: str = None,
 @router.post('/status', summary="Add status")
 async def patch_user(schema: StatusSchema,
                      session: AsyncSession = Depends(get_async_session)):
-    stmt = insert(StatusModel).values(is_competent_in_payment_issue=schema.dict()['is_competent_in_payment_issue'],
-                                      is_competent_in_create_account=schema.dict()['is_competent_in_create_account'],
-                                      is_competent_in_contact_customer_service=schema.dict()[
-                                          'is_competent_in_contact_customer_service'],
-                                      is_competent_in_get_invoice=schema.dict()['is_competent_in_get_invoice'],
-                                      is_competent_in_track_order=schema.dict()['is_competent_in_track_order'],
-                                      is_competent_in_get_refund=schema.dict()['is_competent_in_get_refund'],
-                                      is_competent_in_contact_human_agent=schema.dict()[
-                                          'is_competent_in_contact_human_agent'],
-                                      is_competent_in_recover_password=schema.dict()[
-                                          'is_competent_in_recover_password'],
-                                      is_competent_in_change_order=schema.dict()['is_competent_in_change_order'],
-                                      is_competent_in_delete_account=schema.dict()['is_competent_in_delete_account'],
-                                      is_competent_in_complaint=schema.dict()['is_competent_in_complaint'],
-                                      is_competent_in_check_invoices=schema.dict()['is_competent_in_check_invoices'],
-                                      is_competent_in_review=schema.dict()['is_competent_in_review'],
-                                      is_competent_in_check_refund_policy=schema.dict()[
-                                          'is_competent_in_check_refund_policy'],
-                                      is_competent_in_delivery_options=schema.dict()[
-                                          'is_competent_in_delivery_options'],
-                                      is_competent_in_check_cancellation_fee=schema.dict()[
-                                          'is_competent_in_check_cancellation_fee'],
-                                      is_competent_in_track_refund=schema.dict()['is_competent_in_track_refund'],
-                                      is_competent_in_check_payment_methods=schema.dict()[
-                                          'is_competent_in_check_payment_methods'],
-                                      is_competent_in_switch_account=schema.dict()['is_competent_in_switch_account'],
-                                      is_competent_in_newsletter_subscription=schema.dict()[
-                                          'is_competent_in_newsletter_subscription'],
-                                      is_competent_in_delivery_period=schema.dict()['is_competent_in_delivery_period'],
-                                      is_competent_in_edit_account=schema.dict()['is_competent_in_edit_account'],
-                                      is_competent_in_registration_problems=schema.dict()[
-                                          'is_competent_in_registration_problems'],
-                                      is_competent_in_change_shipping_address=schema.dict()[
-                                          'is_competent_in_change_shipping_address'],
-                                      is_competent_in_set_up_shipping_address=schema.dict()[
-                                          'is_competent_in_set_up_shipping_address'],
-                                      is_competent_in_place_order=schema.dict()['is_competent_in_place_order'],
-                                      is_competent_in_cancel_order=schema.dict()['is_competent_in_cancel_order'],
-                                      is_competent_in_check_invoice=schema.dict()['is_competent_in_check_invoice'], )
+    stmt = insert(StatusModel).values(**schema.dict())
     await session.execute(stmt)
     await session.commit()
     return Response(status_code=200)
@@ -306,4 +331,11 @@ async def patch_user(session: AsyncSession = Depends(get_async_session)):
     query = select(StatusModel)
     result = await session.execute(query)
     result = result.all()
+    print(result)
+    return Response(status_code=200)
+
+
+@router.post('/all', summary="Add all professionals")
+async def add_all():
+    os.system('python services/auth/add_all.py')
     return Response(status_code=200)

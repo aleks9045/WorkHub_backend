@@ -13,6 +13,7 @@ sys.path.append("../../GoodProject")
 from backend.config import POSTGRES_USER, PORT, POSTGRES_PASSWORD, HOST, POSTGRES_DB
 from backend.database import Base
 from backend.services.auth.models import UserModel
+from backend.services.auth.models import StatusModel
 from backend.services.files.models import FileModel
 
 config = context.config
