@@ -24,10 +24,3 @@ class UserTaskModel(Base):
     user = Column(String, ForeignKey(UserModel.email, ondelete="CASCADE"), nullable=False)
     task = Column(Integer, ForeignKey(TaskModel.id, ondelete="CASCADE"), nullable=False)
 
-
-# class UserStatusModel(Base):
-#     __tablename__ = "user_status"
-#
-#     id = Column(Integer, primary_key=True, autoincrement=True)
-#     user = Column(String, ForeignKey(UserModel.email, ondelete="CASCADE"), nullable=False)
-#     status = Column(Integer, ForeignKey(StatusModel.id, ondelete="CASCADE"), nullable=False)

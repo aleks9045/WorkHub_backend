@@ -139,43 +139,43 @@ async def get_user(request: Request, session: AsyncSession = Depends(get_async_s
                    UserModel.photo).where(UserModel.id == int(payload["sub"]))
     result = await session.execute(query)
     result = result.all()
-    # query = select(StatusModel.is_competent_in_payment_issue,
-    #                StatusModel.is_competent_in_create_account,
-    #                StatusModel.is_competent_in_contact_customer_service,
-    #                StatusModel.is_competent_in_get_invoice,
-    #                StatusModel.is_competent_in_track_order,
-    #                StatusModel.is_competent_in_get_refund,
-    #                StatusModel.is_competent_in_contact_human_agent,
-    #                StatusModel.is_competent_in_recover_password,
-    #                StatusModel.is_competent_in_change_order,
-    #                StatusModel.is_competent_in_delete_account,
-    #                StatusModel.is_competent_in_complaint,
-    #                StatusModel.is_competent_in_check_invoices,
-    #                StatusModel.is_competent_in_review,
-    #                StatusModel.is_competent_in_check_refund_policy,
-    #                StatusModel.is_competent_in_delivery_options,
-    #                StatusModel.is_competent_in_check_cancellation_fee,
-    #                StatusModel.is_competent_in_track_refund,
-    #                StatusModel.is_competent_in_check_payment_methods,
-    #                StatusModel.is_competent_in_switch_account,
-    #                StatusModel.is_competent_in_newsletter_subscription,
-    #                StatusModel.is_competent_in_delivery_period,
-    #                StatusModel.is_competent_in_edit_account,
-    #                StatusModel.is_competent_in_registration_problems,
-    #                StatusModel.is_competent_in_change_shipping_address,
-    #                StatusModel.is_competent_in_set_up_shipping_address,
-    #                StatusModel.is_competent_in_place_order,
-    #                StatusModel.is_competent_in_cancel_order,
-    #                StatusModel.is_competent_in_check_invoice).where(StatusModel.email == result[0][0])
-    # result = await session.execute(query)
-    # status_result = result.all()
+    query = select(StatusModel.is_competent_in_payment_issue,
+                   StatusModel.is_competent_in_create_account,
+                   StatusModel.is_competent_in_contact_customer_service,
+                   StatusModel.is_competent_in_get_invoice,
+                   StatusModel.is_competent_in_track_order,
+                   StatusModel.is_competent_in_get_refund,
+                   StatusModel.is_competent_in_contact_human_agent,
+                   StatusModel.is_competent_in_recover_password,
+                   StatusModel.is_competent_in_change_order,
+                   StatusModel.is_competent_in_delete_account,
+                   StatusModel.is_competent_in_complaint,
+                   StatusModel.is_competent_in_check_invoices,
+                   StatusModel.is_competent_in_review,
+                   StatusModel.is_competent_in_check_refund_policy,
+                   StatusModel.is_competent_in_delivery_options,
+                   StatusModel.is_competent_in_check_cancellation_fee,
+                   StatusModel.is_competent_in_track_refund,
+                   StatusModel.is_competent_in_check_payment_methods,
+                   StatusModel.is_competent_in_switch_account,
+                   StatusModel.is_competent_in_newsletter_subscription,
+                   StatusModel.is_competent_in_delivery_period,
+                   StatusModel.is_competent_in_edit_account,
+                   StatusModel.is_competent_in_registration_problems,
+                   StatusModel.is_competent_in_change_shipping_address,
+                   StatusModel.is_competent_in_set_up_shipping_address,
+                   StatusModel.is_competent_in_place_order,
+                   StatusModel.is_competent_in_cancel_order,
+                   StatusModel.is_competent_in_check_invoice).where(StatusModel.email == result[0][0])
+    result = await session.execute(query)
+    status_result = result.all()
     if not result:
         raise HTTPException(status_code=404, detail="Пользователь не найден.")
     return JSONResponse(status_code=200, content={"email": result[0][0],
                                                   "full_name": result[0][1],
                                                   "superuser": result[0][2],
                                                   "specialization": result[0][3],
-                                                  # "status": list(status_result[0]),
+                                                  "status": list(status_result[0]),
                                                   "photo": result[0][4]})
 
 
@@ -301,20 +301,24 @@ async def patch_user(session: AsyncSession = Depends(get_async_session)):
     return JSONResponse(status_code=200, content=res_dict)
 
 
-@router.patch('/proffessional', summary="Change user's information")
-async def patch_user(id_: int, specialization: str = None, status: str = None,
-                     session: AsyncSession = Depends(get_async_session)):
-    stmt = update(UserModel).where(UserModel.id == id_).values(specialization=specialization,
-                                                               status=status)
-    await session.execute(stmt)
-    await session.commit()
-    return Response(status_code=200)
-
-
 @router.post('/status', summary="Add status")
-async def patch_user(schema: StatusSchema,
+async def add_status(schema: StatusSchema,
                      session: AsyncSession = Depends(get_async_session)):
+    result = await session.execute(select(StatusModel.id).where(UserModel.email == schema.dict()["email"]))
+    if result.scalars().all():
+        return "ошибка"
     stmt = insert(StatusModel).values(**schema.dict())
     await session.execute(stmt)
     await session.commit()
+
+    return Response(status_code=200)
+
+
+@router.patch('/status', summary="Add status")
+async def patch_status(schema: StatusSchema,
+                     session: AsyncSession = Depends(get_async_session)):
+    stmt = update(StatusModel).where(StatusModel.email == schema.dict()["email"]).values(**schema.dict())
+    await session.execute(stmt)
+    await session.commit()
+
     return Response(status_code=200)
